@@ -1,0 +1,66 @@
+/* Reset simples e variáveis */
+:root {
+    --primary: #0066cc;
+    --accent: #ff6f61;
+    --bg: #f5f7fb;
+    --text: #222
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+body {
+    font-family: Segoe UI, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4
+}
+
+/* Login page error */
+.login-error {
+    display: block;
+    color: #b91c1c;
+    margin-top: 6px;
+    font-size: 0.95rem
+}
+
+/* header user placeholder */
+.header-user {
+    margin-left: 12px;
+    display: none
+}
+
+/* Auth remote banner styles */
+.auth-banner-placeholder { height: 0; }
+.auth-banner {
+        background: linear-gradient(90deg, rgba(255,122,0,0.12), rgba(255,122,0,0.06));
+        color: var(--primary);
+}
+.auth-banner .btn-primary {
+        background: var(--primary);
+        color: #fff;
+        border-radius: 6px;
+        padding: 6px 12px;
+        border: none;
+}
+.auth-banner .btn-ghost {
+        background: transparent;
+        border: 1px solid rgba(0,0,0,0.06);
+        padding: 6px 10px;
+        border-radius: 6px;
+}
+
+/* simple slide down/fade in animation */
+.auth-banner-enter{ animation: slideDown .32s ease-out forwards; }
+.auth-banner-exit{ animation: slideUp .28s ease-in forwards; }
+@keyframes slideDown{
+    0%{ transform: translateY(-12px); opacity: 0 }
+    100%{ transform: translateY(0); opacity: 1 }
+}
+@keyframes slideUp{
+    0%{ transform: translateY(0); opacity: 1 }
+    100%{ transform: translateY(-12px); opacity: 0 }
+}

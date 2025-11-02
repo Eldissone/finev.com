@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIN - Dashboard</title>
+  <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/style.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      background-color: #f6f7f8;
+    }
+
+    .dark body {
+      background-color: #1A1A1A;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+  <!-- Header -->
+  <header
+    class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <span class="text-2xl font-extrabold text-primary">FIN</span>
+          <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Dashboard</span>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="./dashboard.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Dashboard</a>
+          <a href="../pages/areasMentorias.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
+          <a href="../pages/mentores.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="../pages/mentoria.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
+          <a href="../pages/perfil.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
+          <a href="../pages/config.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Configurações</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle"
+            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path id="theme-icon" fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+              id="user-avatar">U</div>
+            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
+              id="user-name">Usuário</span>
+          </div>
+          <button id="logout-btn"
+            class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p class="mt-4 text-text-main dark:text-white">Carregando dashboard...</p>
+    </div>
+  </div>
+
+  <main id="dashboard-content" class="container mx-auto px-6 py-8 hidden">
+    <!-- Dashboard content aqui -->
+    <h1 id="dashboard-title" class="text-3xl font-bold text-text-main dark:text-white">Bem-vindo ao Dashboard</h1>
+    <p id="dashboard-subtitle" class="text-slate-600 dark:text-slate-300 mt-2">Gerencie suas mentorias e acompanhe seu
+      progresso</p>
+
+    <!-- Conteúdo do Dashboard -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text-main dark:text-white">Mentorias Ativas</h3>
+        <p class="text-2xl font-bold text-primary mt-2" id="active-mentorships">0</p>
+      </div>
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text-main dark:text-white">Sessões Concluídas</h3>
+        <p class="text-2xl font-bold text-success mt-2" id="completed-sessions">0</p>
+      </div>
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text-main dark:text-white">Próxima Sessão</h3>
+        <p class="text-lg font-medium text-text-main dark:text-white mt-2" id="next-session">-</p>
+      </div>
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text-main dark:text-white">Progresso Total</h3>
+        <p class="text-2xl font-bold text-primary mt-2" id="total-progress">0%</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/auth.js"></script>
+<script type="module" src="../js/dashboard.js"></script>
+
+</body>
+
+</html>

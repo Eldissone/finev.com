@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIN - Perfil</title>
+  <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/style.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      background-color: #f6f7f8;
+    }
+
+    .dark body {
+      background-color: #1A1A1A;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+  <!-- Header -->
+  <header
+    class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <a href="../dashboard/" class="flex items-center">
+            <span class="text-2xl font-extrabold text-primary">FIN</span>
+            <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Perfil</span>
+          </a>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="../dashboard/"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Dashboard</a>
+          <a href="../pages/areasMentorias.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
+          <a href="../pages/mentores.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="../pages/mentoria.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
+          <a href="../pages/perfil.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Perfil</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle"
+            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path id="theme-icon" fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+              id="header-avatar">U</div>
+            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
+              id="header-name">Usuário</span>
+          </div>
+          <button id="logout-btn"
+            class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p class="mt-4 text-text-main dark:text-white">Carregando perfil...</p>
+    </div>
+  </div>
+
+  <main id="profile-content" class="container mx-auto px-6 py-8 hidden">
+    <div class="max-w-7xl mx-auto">
+      <!-- Cabeçalho do Perfil -->
+      <div class="bg-white dark:bg-[#333333] rounded-xl p-8 shadow-sm mb-8">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <div class="relative">
+            <div id="profile-avatar"
+              class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+              <span id="avatar-initials">U</span>
+            </div>
+          </div>
+          <div class="flex-1 text-center md:text-left">
+            <h1 id="profile-name" class="text-2xl font-bold text-text-main dark:text-white mb-2">Carregando...</h1>
+            <p id="profile-email" class="text-slate-600 dark:text-slate-300 mb-1">carregando@email.com</p>
+            <p id="profile-joined" class="text-sm text-slate-500 dark:text-slate-400">Membro desde <span
+                id="joined-date">Carregando...</span></p>
+
+            <div class="flex flex-wrap gap-4 mt-0 justify-center md:justify-end">
+              <button id="edit-profile-btn"
+                class="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors flex items-center">
+                <span class="material-symbols-outlined mr-2 text-sm">edit</span>
+                Editar Perfil
+              </button>
+              <button
+                class="px-6 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center">
+                <span class="material-symbols-outlined mr-2 text-sm">share</span>
+                Compartilhar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Coluna Esquerda - Estatísticas -->
+        <div class="lg:col-span-2 space-y-8">
+          <!-- Estatísticas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Minhas Estatísticas</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div class="text-2xl font-bold text-primary mb-1" id="mentorships-count">0</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400">Mentorias</div>
+              </div>
+              <div class="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div class="text-2xl font-bold text-success mb-1" id="sessions-count">0</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400">Sessões</div>
+              </div>
+              <div class="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div class="text-2xl font-bold text-primary mb-1" id="progress-percent">0%</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400">Progresso</div>
+              </div>
+              <div class="text-center p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                <div class="text-2xl font-bold text-slate-600 dark:text-slate-400 mb-1" id="rating">5.0</div>
+                <div class="text-sm text-slate-600 dark:text-slate-400">Avaliação</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Mentorias Ativas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-text-main dark:text-white">Mentorias Ativas</h2>
+              <a href="../mentorias/" class="text-primary hover:text-orange-600 text-sm font-medium">Ver todas</a>
+            </div>
+            <div id="active-mentorships" class="space-y-4">
+              <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-4xl mb-2">school</span>
+                <p>Nenhuma mentoria ativa</p>
+                <a href="../mentores/" class="text-primary hover:underline mt-2 inline-block">Encontrar mentores</a>
+              </div>
+            </div>
+          </section>
+
+          <!-- Próximas Sessões -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-text-main dark:text-white">Próximas Sessões</h2>
+              <a href="../mentorias/" class="text-primary hover:text-orange-600 text-sm font-medium">Ver agenda</a>
+            </div>
+            <div id="upcoming-sessions" class="space-y-4">
+              <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+                <span class="material-symbols-outlined text-4xl mb-2">event</span>
+                <p>Nenhuma sessão agendada</p>
+                <a href="../mentores/" class="text-primary hover:underline mt-2 inline-block">Agendar sessão</a>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Coluna Direita - Ações Rápidas -->
+        <div class="space-y-8">
+          <!-- Tornar-se Mentor -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-4">Torne-se um Mentor</h2>
+            <p class="text-slate-600 dark:text-slate-300 mb-4 text-sm">Compartilhe seu conhecimento e ajude outros
+              profissionais a crescerem.</p>
+            <button
+              class="w-full bg-gradient-to-r from-primary to-orange-400 text-white py-3 rounded-lg font-medium hover:opacity-90 transition-opacity flex items-center justify-center">
+              <span class="material-symbols-outlined mr-2">workspace_premium</span>
+              Candidate-se
+            </button>
+          </section>
+
+          <!-- Configurações Rápidas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-4">Configurações</h2>
+            <div class="space-y-3">
+              <button
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">notifications</span>
+                  <span class="font-medium text-text-main dark:text-white">Notificações</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+              </button>
+
+              <button
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">security</span>
+                  <span class="font-medium text-text-main dark:text-white">Privacidade</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+              </button>
+
+              <button
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">help</span>
+                  <span class="font-medium text-text-main dark:text-white">Ajuda & Suporte</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+              </button>
+
+              <button id="theme-toggle-btn"
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">dark_mode</span>
+                  <span class="font-medium text-text-main dark:text-white">Tema Escuro</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">chevron_right</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Informações da Conta -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-4">Informações da Conta</h2>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-slate-600 dark:text-slate-400">Plano atual:</span>
+                <span class="font-medium text-primary">Premium</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600 dark:text-slate-400">Status:</span>
+                <span class="font-medium text-success">Ativo</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-600 dark:text-slate-400">Próxima cobrança:</span>
+                <span class="font-medium text-text-main dark:text-white">15/11/2024</span>
+              </div>
+            </div>
+            <button
+              class="w-full mt-4 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+              Gerenciar Assinatura
+            </button>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    class ProfilePage {
+      constructor() {
+        this.authService = authService;
+        this.currentUser = null;
+        this.userData = null;
+        this.init();
+      }
+
+      async init() {
+        try {
+          console.log('🚀 Iniciando página de perfil...');
+          this.showLoading(true);
+
+          // Verificar autenticação
+          const isAuthenticated = await this.checkAuthentication();
+
+          if (!isAuthenticated) {
+            console.log('❌ Não autenticado, redirecionando...');
+            this.redirectToLogin();
+            return;
+          }
+
+          // Carregar dados do usuário
+          await this.loadUserData();
+
+          // Atualizar UI
+          this.updateUI();
+          this.setupEventListeners();
+
+          // Esconder loading e mostrar conteúdo
+          this.showLoading(false);
+          this.showContent(true);
+
+          console.log('✅ Página de perfil carregada com sucesso');
+
+        } catch (error) {
+          console.error('💥 Erro ao carregar perfil:', error);
+          this.showError('Erro ao carregar perfil');
+        }
+      }
+
+      async checkAuthentication() {
+        const token = localStorage.getItem('fin_token');
+
+        if (!token) {
+          console.log('❌ Token não encontrado');
+          return false;
+        }
+
+        // Verificar com o backend
+        const profile = await this.authService.getProfile();
+        if (!profile.success) {
+          console.log('❌ Perfil não carregado:', profile.message);
+          return false;
+        }
+
+        this.currentUser = profile.data.user;
+        return true;
+      }
+
+      async loadUserData() {
+        try {
+          // Dados mock - em produção viriam da API
+          this.userData = {
+            mentorships: 3,
+            sessions: 12,
+            progress: 75,
+            rating: 4.8,
+            joinedDate: '2024-01-15',
+            activeMentorships: [
+              {
+                id: 1,
+                mentor: 'Carlos Mendes',
+                topic: 'Análise de Investimentos',
+                progress: 60,
+                nextSession: '30/10/2024 - 14:00'
+              },
+              {
+                id: 2,
+                mentor: 'Ana Silva',
+                topic: 'Gestão de Carteiras',
+                progress: 40,
+                nextSession: '02/11/2024 - 10:00'
+              }
+            ],
+            upcomingSessions: [
+              {
+                id: 1,
+                mentor: 'Carlos Mendes',
+                topic: 'Análise de Investimentos',
+                date: '30/10/2024',
+                time: '14:00',
+                type: 'video'
+              },
+              {
+                id: 2,
+                mentor: 'Ana Silva',
+                topic: 'Gestão de Carteiras',
+                date: '02/11/2024',
+                time: '10:00',
+                type: 'presencial'
+              }
+            ]
+          };
+
+        } catch (error) {
+          console.error('❌ Erro ao carregar dados:', error);
+          throw error;
+        }
+      }
+
+      updateUI() {
+        if (!this.currentUser) return;
+
+        // Atualizar informações básicas
+        const userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+        const userInitials = (this.currentUser.firstName?.[0] || 'U') + (this.currentUser.lastName?.[0] || '');
+
+        document.getElementById('profile-name').textContent = userName;
+        document.getElementById('profile-email').textContent = this.currentUser.email;
+        document.getElementById('avatar-initials').textContent = userInitials;
+        document.getElementById('header-avatar').textContent = userInitials;
+        document.getElementById('header-name').textContent = userName;
+
+        // Formatar data de entrada
+        const joinedDate = new Date(this.currentUser.createdAt || this.userData.joinedDate);
+        document.getElementById('joined-date').textContent = joinedDate.toLocaleDateString('pt-BR');
+
+        // Atualizar estatísticas
+        document.getElementById('mentorships-count').textContent = this.userData.mentorships;
+        document.getElementById('sessions-count').textContent = this.userData.sessions;
+        document.getElementById('progress-percent').textContent = `${this.userData.progress}%`;
+        document.getElementById('rating').textContent = this.userData.rating;
+
+        // Atualizar mentorias ativas
+        this.updateActiveMentorships();
+
+        // Atualizar próximas sessões
+        this.updateUpcomingSessions();
+      }
+
+      updateActiveMentorships() {
+        const container = document.getElementById('active-mentorships');
+
+        if (!this.userData.activeMentorships.length) {
+          return; // Mantém o estado vazio padrão
+        }
+
+        container.innerHTML = this.userData.activeMentorships.map(mentorship => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentorship.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentorship.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                  Próxima: ${mentorship.nextSession}
+                </div>
+              </div>
+              <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${mentorship.progress}%</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${mentorship.progress}%"></div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      updateUpcomingSessions() {
+        const container = document.getElementById('upcoming-sessions');
+
+        if (!this.userData.upcomingSessions.length) {
+          return; // Mantém o estado vazio padrão
+        }
+
+        container.innerHTML = this.userData.upcomingSessions.map(session => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${session.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-1">
+                  <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
+                  ${session.date} às ${session.time}
+                </div>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">${session.type === 'video' ? 'videocam' : 'location_on'}</span>
+                  ${session.type === 'video' ? 'Videochamada' : 'Presencial'}
+                </div>
+              </div>
+              <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors whitespace-nowrap">
+                Entrar
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      setupEventListeners() {
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          if (confirm('Tem certeza que deseja sair?')) {
+            this.authService.logout();
+          }
+        });
+
+        document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
+        document.getElementById('theme-toggle-btn').addEventListener('click', this.toggleTheme);
+
+        document.getElementById('edit-profile-btn').addEventListener('click', () => {
+          alert('Funcionalidade de edição de perfil em desenvolvimento!');
+        });
+      }
+
+      showLoading(show) {
+        const loadingElement = document.getElementById('loading-state');
+        if (loadingElement) {
+          loadingElement.style.display = show ? 'flex' : 'none';
+        }
+      }
+
+      showContent(show) {
+        const contentElement = document.getElementById('profile-content');
+        if (contentElement) {
+          contentElement.style.display = show ? 'block' : 'none';
+        }
+      }
+
+      redirectToLogin() {
+        window.location.href = '../pages/login';
+      }
+
+      toggleTheme() {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+          html.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      }
+    }
+
+    // Inicializar quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      new ProfilePage();
+    });
+
+    // Tema inicial - SEMPRE light por padrão
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      // Força tema light mesmo se o sistema for dark
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  </script>
+</body>
+
+</html>

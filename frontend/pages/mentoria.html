@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIN - Mentorias</title>
+  <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/style.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      background-color: #f6f7f8;
+    }
+
+    .dark body {
+      background-color: #1A1A1A;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+  <!-- Header -->
+  <header
+    class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <a href="../dashboard/" class="flex items-center">
+            <span class="text-2xl font-extrabold text-primary">FIN</span>
+            <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Mentorias</span>
+          </a>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="../dashboard/"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Dashboard</a>
+          <a href="../pages/areasMentorias.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
+          <a href="../pages/mentores.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="../pages/mentoria.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Mentorias</a>
+          <a href="../pages/perfil.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle"
+            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path id="theme-icon" fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+              id="header-avatar">U</div>
+            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
+              id="header-name">Usuário</span>
+          </div>
+          <button id="logout-btn"
+            class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p class="mt-4 text-text-main dark:text-white">Carregando mentorias...</p>
+    </div>
+  </div>
+
+  <main id="mentorias-content" class="container mx-auto px-6 py-8 hidden">
+    <div class="max-w-7xl mx-auto">
+      <!-- Cabeçalho e Filtros -->
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-text-main dark:text-white mb-2">Minhas Mentorias</h1>
+          <p class="text-slate-600 dark:text-slate-300">Gerencie suas sessões de mentoria e acompanhe seu progresso</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button id="filter-all"
+            class="px-4 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-opacity-90 transition-colors">
+            Todas
+          </button>
+          <button id="filter-active"
+            class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            Ativas
+          </button>
+          <button id="filter-completed"
+            class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+            Concluídas
+          </button>
+          <button onclick="window.location.href='../mentores/'"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors flex items-center">
+            <span class="material-symbols-outlined mr-2 text-sm">add</span>
+            Nova Mentoria
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Coluna Principal -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Mentorias Ativas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-text-main dark:text-white">Mentorias em Andamento</h2>
+              <span class="text-sm text-slate-600 dark:text-slate-400" id="active-count">3 ativas</span>
+            </div>
+            <div id="active-mentorships" class="space-y-4">
+              <!-- Mentorias ativas serão carregadas aqui -->
+            </div>
+          </section>
+
+          <!-- Próximas Sessões -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-text-main dark:text-white">Próximas Sessões</h2>
+              <a href="#" class="text-primary hover:text-orange-600 text-sm font-medium">Ver calendário</a>
+            </div>
+            <div id="upcoming-sessions" class="space-y-4">
+              <!-- Sessões serão carregadas aqui -->
+            </div>
+          </section>
+
+          <!-- Histórico de Mentorias -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-text-main dark:text-white">Histórico de Mentorias</h2>
+              <span class="text-sm text-slate-600 dark:text-slate-400" id="completed-count">12 concluídas</span>
+            </div>
+            <div id="completed-mentorships" class="space-y-4">
+              <!-- Mentorias concluídas serão carregadas aqui -->
+            </div>
+          </section>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+          <!-- Estatísticas Rápidas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-4">Estatísticas</h2>
+            <div class="space-y-4">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600 dark:text-slate-400">Mentorias Ativas</span>
+                <span class="font-bold text-primary" id="stats-active">3</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600 dark:text-slate-400">Sessões Este Mês</span>
+                <span class="font-bold text-success" id="stats-month">5</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600 dark:text-slate-400">Horas de Mentoria</span>
+                <span class="font-bold text-primary" id="stats-hours">24h</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-600 dark:text-slate-400">Taxa de Conclusão</span>
+                <span class="font-bold text-success" id="stats-completion">85%</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- Ações Rápidas -->
+          <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-4">Ações Rápidas</h2>
+            <div class="space-y-3">
+              <button onclick="window.location.href='../mentores/'"
+                class="w-full flex items-center justify-between p-3 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-primary mr-3">search</span>
+                  <span class="font-medium text-text-main dark:text-white">Encontrar Mentores</span>
+                </div>
+                <span class="material-symbols-outlined text-primary text-sm">arrow_forward</span>
+              </button>
+
+              <button onclick="window.location.href='../agenda/'"
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">calendar_today</span>
+                  <span class="font-medium text-text-main dark:text-white">Minha Agenda</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+              </button>
+
+              <button onclick="window.location.href='../materiais/'"
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">folder</span>
+                  <span class="font-medium text-text-main dark:text-white">Materiais de Apoio</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+              </button>
+
+              <button onclick="window.location.href='../suporte/'"
+                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left">
+                <div class="flex items-center">
+                  <span class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">help</span>
+                  <span class="font-medium text-text-main dark:text-white">Suporte</span>
+                </div>
+                <span class="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Próxima Mentoria -->
+          <section class="bg-gradient-to-r from-primary to-orange-400 rounded-xl p-6 text-white">
+            <h2 class="text-xl font-bold mb-2">Próxima Sessão</h2>
+            <div id="next-session-card" class="space-y-3">
+              <!-- Próxima sessão será carregada aqui -->
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    class MentoriasPage {
+      constructor() {
+        this.authService = authService;
+        this.currentUser = null;
+        this.mentoriasData = null;
+        this.currentFilter = 'all';
+        this.init();
+      }
+
+      async init() {
+        try {
+          console.log('🚀 Iniciando página de mentorias...');
+          this.showLoading(true);
+
+          // Verificar autenticação
+          const isAuthenticated = await this.checkAuthentication();
+
+          if (!isAuthenticated) {
+            console.log('❌ Não autenticado, redirecionando...');
+            this.redirectToLogin();
+            return;
+          }
+
+          // Carregar dados das mentorias
+          await this.loadMentoriasData();
+
+          // Atualizar UI
+          this.updateUI();
+          this.setupEventListeners();
+
+          // Esconder loading e mostrar conteúdo
+          this.showLoading(false);
+          this.showContent(true);
+
+          console.log('✅ Página de mentorias carregada com sucesso');
+
+        } catch (error) {
+          console.error('💥 Erro ao carregar mentorias:', error);
+          this.showError('Erro ao carregar mentorias');
+        }
+      }
+
+      async checkAuthentication() {
+        const token = localStorage.getItem('fin_token');
+
+        if (!token) {
+          console.log('❌ Token não encontrado');
+          return false;
+        }
+
+        // Verificar com o backend
+        const profile = await this.authService.getProfile();
+        if (!profile.success) {
+          console.log('❌ Perfil não carregado:', profile.message);
+          return false;
+        }
+
+        this.currentUser = profile.data.user;
+        return true;
+      }
+
+      async loadMentoriasData() {
+        try {
+          // Dados mock - em produção viriam da API
+          this.mentoriasData = {
+            activeMentorships: [
+              {
+                id: 1,
+                mentor: 'Carlos Mendes',
+                mentorRole: 'Analista Sênior',
+                topic: 'Análise de Investimentos',
+                progress: 60,
+                nextSession: '30/10/2024 - 14:00',
+                sessionsCompleted: 4,
+                totalSessions: 8,
+                rating: 4.8
+              },
+              {
+                id: 2,
+                mentor: 'Ana Silva',
+                mentorRole: 'Gestora de Carteiras',
+                topic: 'Gestão de Carteiras',
+                progress: 40,
+                nextSession: '02/11/2024 - 10:00',
+                sessionsCompleted: 2,
+                totalSessions: 6,
+                rating: 4.9
+              },
+              {
+                id: 3,
+                mentor: 'Roberto Almeida',
+                mentorRole: 'Especialista em Ações',
+                topic: 'Mercado de Ações',
+                progress: 25,
+                nextSession: '05/11/2024 - 16:30',
+                sessionsCompleted: 1,
+                totalSessions: 4,
+                rating: 4.7
+              }
+            ],
+            upcomingSessions: [
+              {
+                id: 1,
+                mentorshipId: 1,
+                mentor: 'Carlos Mendes',
+                topic: 'Análise de Investimentos - Aula 5',
+                date: '30/10/2024',
+                time: '14:00',
+                duration: '60 min',
+                type: 'video',
+                joinLink: '#'
+              },
+              {
+                id: 2,
+                mentorshipId: 2,
+                mentor: 'Ana Silva',
+                topic: 'Gestão de Carteiras - Aula 3',
+                date: '02/11/2024',
+                time: '10:00',
+                duration: '45 min',
+                type: 'presencial',
+                location: 'São Paulo - SP'
+              }
+            ],
+            completedMentorships: [
+              {
+                id: 4,
+                mentor: 'Maria Santos',
+                topic: 'Fundamentos de Finanças',
+                completedDate: '15/09/2024',
+                rating: 4.8,
+                sessionsCompleted: 6
+              },
+              {
+                id: 5,
+                mentor: 'João Pereira',
+                topic: 'Planejamento Financeiro',
+                completedDate: '28/08/2024',
+                rating: 4.6,
+                sessionsCompleted: 5
+              }
+            ],
+            stats: {
+              active: 3,
+              monthSessions: 5,
+              totalHours: '24h',
+              completionRate: '85%',
+              nextSession: {
+                mentor: 'Carlos Mendes',
+                topic: 'Análise de Investimentos',
+                date: '30/10/2024',
+                time: '14:00'
+              }
+            }
+          };
+
+        } catch (error) {
+          console.error('❌ Erro ao carregar dados:', error);
+          throw error;
+        }
+      }
+
+      updateUI() {
+        if (!this.currentUser) return;
+
+        // Atualizar header
+        const userInitials = (this.currentUser.firstName?.[0] || 'U') + (this.currentUser.lastName?.[0] || '');
+        document.getElementById('header-avatar').textContent = userInitials;
+        document.getElementById('header-name').textContent = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+
+        // Atualizar estatísticas
+        this.updateStats();
+
+        // Atualizar mentorias ativas
+        this.updateActiveMentorships();
+
+        // Atualizar próximas sessões
+        this.updateUpcomingSessions();
+
+        // Atualizar mentorias concluídas
+        this.updateCompletedMentorships();
+
+        // Atualizar próxima sessão
+        this.updateNextSession();
+      }
+
+      updateStats() {
+        const stats = this.mentoriasData.stats;
+        document.getElementById('stats-active').textContent = stats.active;
+        document.getElementById('stats-month').textContent = stats.monthSessions;
+        document.getElementById('stats-hours').textContent = stats.totalHours;
+        document.getElementById('stats-completion').textContent = stats.completionRate;
+        document.getElementById('active-count').textContent = `${stats.active} ativas`;
+        document.getElementById('completed-count').textContent = `${this.mentoriasData.completedMentorships.length} concluídas`;
+      }
+
+      updateActiveMentorships() {
+        const container = document.getElementById('active-mentorships');
+        const mentorias = this.mentoriasData.activeMentorships;
+
+        if (!mentorias.length) {
+          container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">school</span>
+              <p class="mb-4">Nenhuma mentoria ativa no momento</p>
+              <button onclick="window.location.href='../mentores/'" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                Encontrar Mentores
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = mentorias.map(mentoria => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentoria.mentor} • ${mentoria.mentorRole}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                  Próxima sessão: ${mentoria.nextSession}
+                </div>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">star</span>
+                  ${mentoria.rating} • ${mentoria.sessionsCompleted}/${mentoria.totalSessions} sessões
+                </div>
+              </div>
+              <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${mentoria.progress}%</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-3">
+              <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${mentoria.progress}%"></div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="window.location.href='../mentoria/${mentoria.id}/'" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
+                Ver Detalhes
+              </button>
+              <button onclick="window.location.href='../sessao/agendar/?mentoria=${mentoria.id}'" class="flex-1 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Agendar
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      updateUpcomingSessions() {
+        const container = document.getElementById('upcoming-sessions');
+        const sessions = this.mentoriasData.upcomingSessions;
+
+        if (!sessions.length) {
+          container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">event</span>
+              <p>Nenhuma sessão agendada</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = sessions.map(session => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${session.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-1">
+                  <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
+                  ${session.date} às ${session.time} • ${session.duration}
+                </div>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">${session.type === 'video' ? 'videocam' : 'location_on'}</span>
+                  ${session.type === 'video' ? 'Videochamada' : session.location}
+                </div>
+              </div>
+              <button onclick="window.location.href='${session.joinLink}'" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors whitespace-nowrap">
+                ${session.type === 'video' ? 'Entrar' : 'Ver Local'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      updateCompletedMentorships() {
+        const container = document.getElementById('completed-mentorships');
+        const mentorias = this.mentoriasData.completedMentorships;
+
+        if (!mentorias.length) {
+          container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">check_circle</span>
+              <p>Nenhuma mentoria concluída</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = mentorias.map(mentoria => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentoria.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+                  Concluída em ${mentoria.completedDate} • ${mentoria.sessionsCompleted} sessões
+                </div>
+              </div>
+              <div class="flex items-center bg-success/10 px-3 py-1 rounded-full">
+                <span class="material-symbols-outlined text-success text-sm mr-1">star</span>
+                <span class="font-bold text-success text-sm">${mentoria.rating}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      updateNextSession() {
+        const container = document.getElementById('next-session-card');
+        const nextSession = this.mentoriasData.stats.nextSession;
+
+        container.innerHTML = `
+          <div class="bg-white/20 rounded-lg p-4">
+            <h3 class="font-bold mb-1">${nextSession.topic}</h3>
+            <p class="text-white/90 text-sm mb-2">Com ${nextSession.mentor}</p>
+            <div class="flex items-center text-white/80 text-sm mb-3">
+              <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+              ${nextSession.date} às ${nextSession.time}
+            </div>
+            <button onclick="window.location.href='../sessao/${nextSession.id}/'" class="w-full bg-white text-primary py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+              Preparar para Sessão
+            </button>
+          </div>
+        `;
+      }
+
+      setupEventListeners() {
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          if (confirm('Tem certeza que deseja sair?')) {
+            this.authService.logout();
+          }
+        });
+
+        document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
+
+        // Filtros
+        document.getElementById('filter-all').addEventListener('click', () => this.setFilter('all'));
+        document.getElementById('filter-active').addEventListener('click', () => this.setFilter('active'));
+        document.getElementById('filter-completed').addEventListener('click', () => this.setFilter('completed'));
+      }
+
+      setFilter(filter) {
+        this.currentFilter = filter;
+
+        // Atualizar botões ativos
+        document.getElementById('filter-all').classList.toggle('bg-primary', filter === 'all');
+        document.getElementById('filter-all').classList.toggle('text-white', filter === 'all');
+        document.getElementById('filter-all').classList.toggle('border', filter !== 'all');
+
+        document.getElementById('filter-active').classList.toggle('bg-primary', filter === 'active');
+        document.getElementById('filter-active').classList.toggle('text-white', filter === 'active');
+        document.getElementById('filter-active').classList.toggle('border', filter !== 'active');
+
+        document.getElementById('filter-completed').classList.toggle('bg-primary', filter === 'completed');
+        document.getElementById('filter-completed').classList.toggle('text-white', filter === 'completed');
+        document.getElementById('filter-completed').classList.toggle('border', filter !== 'completed');
+
+        // Aqui você implementaria a lógica de filtragem real
+        console.log(`Filtro aplicado: ${filter}`);
+      }
+
+      showLoading(show) {
+        const loadingElement = document.getElementById('loading-state');
+        if (loadingElement) {
+          loadingElement.style.display = show ? 'flex' : 'none';
+        }
+      }
+
+      showContent(show) {
+        const contentElement = document.getElementById('mentorias-content');
+        if (contentElement) {
+          contentElement.style.display = show ? 'block' : 'none';
+        }
+      }
+
+      redirectToLogin() {
+        window.location.href = '../login/';
+      }
+
+      toggleTheme() {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+          html.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      }
+    }
+
+    // Inicializar quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      new MentoriasPage();
+    });
+
+    // Tema inicial
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</body>
+
+</html>

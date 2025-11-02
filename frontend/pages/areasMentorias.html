@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>FIN - Áreas de Mentoria</title>
+  <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../js/style.js"></script>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+            "premium": "#FFD700",
+            "pro": "#8B5CF6",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    .locked-overlay {
+      background: linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
+    }
+    .premium-badge {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+    }
+    .pro-badge {
+      background: linear-gradient(135deg, #8B5CF6, #6D28D9);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-slate-200">
+
+  <!-- Loading State -->
+  <div id="loading-state" class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p class="mt-4 text-text-main dark:text-white">Carregando áreas de mentoria...</p>
+    </div>
+  </div>
+
+  <div class="relative flex h-auto min-h-screen w-full flex-col justify-between overflow-x-hidden">
+    <div class="flex-grow">
+      <header class="sticky top-0 z-10 flex items-center justify-between bg-background-light/80 p-4 backdrop-blur-sm dark:bg-background-dark/80 border-b border-slate-200 dark:border-slate-700">
+        <a href="../dashboard/" class="flex size-10 items-center justify-center rounded-full text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-700">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <h1 class="text-lg font-bold text-text-main dark:text-white">Áreas de Mentoria</h1>
+        <div class="size-10"></div>
+      </header>
+
+      <main id="mentorias-content" class="p-4 hidden">
+        <!-- Informações do Plano -->
+        <div class="bg-white dark:bg-[#333333] rounded-xl p-4 mb-6 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-lg font-bold text-text-main dark:text-white" id="user-plan">Carregando...</h2>
+              <p class="text-sm text-slate-600 dark:text-slate-400" id="plan-description">Seu plano atual</p>
+            </div>
+            <button onclick="window.location.href='../planos/'" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
+              Upgrade
+            </button>
+          </div>
+          <div class="mt-3 bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-600 dark:text-slate-400">Áreas disponíveis:</span>
+              <span class="font-bold text-primary" id="available-areas">0/5</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
+              <div id="plan-progress" class="bg-primary h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="mb-4 text-2xl font-extrabold text-text-main dark:text-white">Selecione sua área de interesse</h2>
+        <p id="dashboard-user" class="subtitle mb-6 text-slate-600 dark:text-slate-400">&nbsp;</p>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <!-- FIN - Área Principal (Sempre disponível) -->
+          <div class="group relative">
+            <a href="../mentores/?area=FIN" class="block">
+              <div class="relative w-full overflow-hidden rounded-xl border-2 border-primary">
+                <div class="w-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCQodPwq_orwKJ4A2bul5AyP8NHJ0Z35PskxKn-kP210ynQ69gVD1toYNjm19WkcU9SwJS7khmkQfveQ_lbUxgyxcMJOqYw0OyOEjb6usDgSuVYzDh33YR4c07ZYnIOhgW6k8k_zADyCM7RFghZ5hPklxZESAP_mxchAM45tJK0LOW_sqMNkIVk9OaSog6jO1AR3VdiRv14DpzVQXSpF9FcLR6l043_wOrJib0irExretqrkVvZfVxSVdQVxtl2BKaE4FnFZ8f-bpY");'></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                <div class="absolute bottom-0 left-0 p-3">
+                  <h3 class="text-xl font-bold text-white">FIN</h3>
+                  <p class="text-xs text-white/80">Finanças, Inovação e Negócio</p>
+                </div>
+                <div class="absolute top-2 right-2">
+                  <span class="bg-success text-white text-xs px-2 py-1 rounded-full font-medium">Incluído</span>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <!-- TECH - Disponível no plano PRO -->
+          <div class="group relative" id="tech-area">
+            <div class="relative w-full overflow-hidden rounded-xl">
+              <div class="w-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBk6YxLvw-JuZFOdCUhSzOq5bbaEuM05HezU0oBaTfU2y-JXvX9MGCqOS06bJ06IRJW-qsY7nKLL_2l8nZ3cnetw_Usjq13EMs58TmVYA5zrAjXBQusAtQZz2GEp_5bK4Jb9K_yl4wrgsp4kAmxls1obdHEC8al-nz__7eaLoxPtODcP3uEpYZBApkvmaihZIVu7vQhiuuhJ3ZPHBnvvOKFAw7kt2rueLX9UejzyoLU-KiU2SRJOmnXIwqj5rAbDeRJQexBpPa2hZ8");'></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 p-3">
+                <h3 class="text-xl font-bold text-white">TECH</h3>
+                <p class="text-xs text-white/80">Tecnologia & Inovação</p>
+              </div>
+              <div class="absolute top-2 right-2">
+                <span class="pro-badge text-white text-xs px-2 py-1 rounded-full font-medium">PRO</span>
+              </div>
+              <!-- Overlay de bloqueio -->
+              <div id="tech-lock" class="absolute inset-0 locked-overlay rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="text-center text-white p-4">
+                  <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                  <p class="text-sm font-medium mb-2">Disponível no plano PRO</p>
+                  <button onclick="window.location.href='../planos/'" class="bg-pro text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                    Upgrade para PRO
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BIZ - Disponível no plano PREMIUM -->
+          <div class="group relative" id="biz-area">
+            <div class="relative w-full overflow-hidden rounded-xl">
+              <div class="w-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDbh-E-RTjOAiP-pB5I924dqZpf5WO9qvwpF9eS_RxvT_chwLh2NsEkvoS-n4sann6NM27x-igHbnB_0ZbXNCOTvhQXkEYRs-7DzYAn6sH1UWpQNQeoS6qp8dnYSulHP_pML0hs7IuUbIp5zUH8awQjLL_GgwJ9n3wvYtalECkCNmyzMSJ3DPo4VOmXTFsmTOq4ZAWjIFLyX4pg3nEeb0OJu_p9pVlSXsNnrtxfVLhr5IV5aJ6n2VFzap6NOW_7ZP5b8y_S74pEF0Y");'></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 p-3">
+                <h3 class="text-xl font-bold text-white">BIZ</h3>
+                <p class="text-xs text-white/80">Business & Empreendedorismo</p>
+              </div>
+              <div class="absolute top-2 right-2">
+                <span class="premium-badge text-gray-800 text-xs px-2 py-1 rounded-full font-medium">PREMIUM</span>
+              </div>
+              <!-- Overlay de bloqueio -->
+              <div id="biz-lock" class="absolute inset-0 locked-overlay rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="text-center text-white p-4">
+                  <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                  <p class="text-sm font-medium mb-2">Disponível no plano PREMIUM</p>
+                  <button onclick="window.location.href='../planos/'" class="bg-premium text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                    Upgrade para PREMIUM
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AGRO - Disponível no plano PRO -->
+          <div class="group relative" id="agro-area">
+            <div class="relative w-full overflow-hidden rounded-xl">
+              <div class="w-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCEFT4o95pkOKaWeMSPuseveTreg0xjfdNBmPVOuIz1BQ8LZYjsXidiTDtfvp4VnhjWRyTw8rbEWli2LwW2SZr8pbgOVrnipz-scACJ09lebb7wV7A1QnCKwW5b3fVn2SMAfLBiuMSlYPnu0a04wAOYOaK5v-5mJFZjKb9bkgtvnhJjFIkGJZdAW0BDU8po5bB0lDr7-JhxJaNWG_iCMFst4D57wPTpF7cjJE7CIa1iTPLdX1raIFJQ7R9ZC7m1JVNJjocrmHiyhZc");'></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 p-3">
+                <h3 class="text-xl font-bold text-white">AGRO</h3>
+                <p class="text-xs text-white/80">Agronegócio & Sustentabilidade</p>
+              </div>
+              <div class="absolute top-2 right-2">
+                <span class="pro-badge text-white text-xs px-2 py-1 rounded-full font-medium">PRO</span>
+              </div>
+              <!-- Overlay de bloqueio -->
+              <div id="agro-lock" class="absolute inset-0 locked-overlay rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="text-center text-white p-4">
+                  <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                  <p class="text-sm font-medium mb-2">Disponível no plano PRO</p>
+                  <button onclick="window.location.href='../planos/'" class="bg-pro text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                    Upgrade para PRO
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIFE - Disponível no plano PREMIUM -->
+          <div class="group relative" id="life-area">
+            <div class="relative w-full overflow-hidden rounded-xl">
+              <div class="w-full bg-center bg-no-repeat aspect-square bg-cover transition-transform duration-300 group-hover:scale-105" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA3v6-vzpvMB2JbCqKlg3WGepc2xqo4J0QmzamCkk-IRvzZwEBOa4VSqcqEbrs-nPTyVV7RmHGBiW_BtkLqhvCDZT_cMxO2x0fcCYWKW4slunwXKdKuELn0vBI73AGHLQPXWpV1ukKyUaVmUAMXHER8LTwASUO99Jtz8629iV5OVuitQUI-j1Bi4fgFlQ__PBZbTCO8CBa8D5vF8J6-a4HAZCNQ-iaHYyN1K6xIMd_nkTAkNiumuPktcuHRjqPDK6OG2LCso2MsKtM");'></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 p-3">
+                <h3 class="text-xl font-bold text-white">LIFE</h3>
+                <p class="text-xs text-white/80">Desenvolvimento Pessoal</p>
+              </div>
+              <div class="absolute top-2 right-2">
+                <span class="premium-badge text-gray-800 text-xs px-2 py-1 rounded-full font-medium">PREMIUM</span>
+              </div>
+              <!-- Overlay de bloqueio -->
+              <div id="life-lock" class="absolute inset-0 locked-overlay rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="text-center text-white p-4">
+                  <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                  <p class="text-sm font-medium mb-2">Disponível no plano PREMIUM</p>
+                  <button onclick="window.location.href='../planos/'" class="bg-premium text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                    Upgrade para PREMIUM
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- HEALTH - Disponível no plano PREMIUM -->
+          <div class="group relative" id="health-area">
+            <div class="relative w-full overflow-hidden rounded-xl">
+              <div class="w-full bg-center bg-no-repeat aspect-square bg-cover bg-gray-300 transition-transform duration-300 group-hover:scale-105">
+                <div class="w-full h-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-white text-4xl">favorite</span>
+                </div>
+              </div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              <div class="absolute bottom-0 left-0 p-3">
+                <h3 class="text-xl font-bold text-white">HEALTH</h3>
+                <p class="text-xs text-white/80">Saúde & Bem-estar</p>
+              </div>
+              <div class="absolute top-2 right-2">
+                <span class="premium-badge text-gray-800 text-xs px-2 py-1 rounded-full font-medium">PREMIUM</span>
+              </div>
+              <!-- Overlay de bloqueio -->
+              <div id="health-lock" class="absolute inset-0 locked-overlay rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div class="text-center text-white p-4">
+                  <span class="material-symbols-outlined text-3xl mb-2">lock</span>
+                  <p class="text-sm font-medium mb-2">Disponível no plano PREMIUM</p>
+                  <button onclick="window.location.href='../planos/'" class="bg-premium text-gray-800 px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                    Upgrade para PREMIUM
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Informações dos Planos -->
+        <div class="mt-8 bg-slate-50 dark:bg-slate-800 rounded-xl p-6">
+          <h3 class="text-lg font-bold text-text-main dark:text-white mb-4">Planos Disponíveis</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-[#333333] rounded-lg p-4 border-2 border-slate-200 dark:border-slate-700">
+              <h4 class="font-bold text-text-main dark:text-white mb-2">BÁSICO</h4>
+              <p class="text-2xl font-bold text-primary mb-2">Grátis</p>
+              <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-4">
+                <li>• Área FIN incluída</li>
+                <li>• 2 sessões/mês</li>
+                <li>• Suporte básico</li>
+              </ul>
+              <button class="w-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 py-2 rounded-lg text-sm font-medium cursor-not-allowed" disabled>
+                Plano Atual
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-[#333333] rounded-lg p-4 border-2 border-pro relative">
+              <div class="absolute -top-2 left-1/2 transform -translate-x-1/2">
+                <span class="bg-pro text-white text-xs px-3 py-1 rounded-full font-medium">MAIS POPULAR</span>
+              </div>
+              <h4 class="font-bold text-text-main dark:text-white mb-2">PRO</h4>
+              <p class="text-2xl font-bold text-pro mb-2">R$ 99/mês</p>
+              <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-4">
+                <li>• Áreas FIN + TECH + AGRO</li>
+                <li>• 8 sessões/mês</li>
+                <li>• Suporte prioritário</li>
+                <li>• Materiais exclusivos</li>
+              </ul>
+              <button onclick="window.location.href='../planos/?tier=pro'" class="w-full bg-pro text-white py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                Upgrade para PRO
+              </button>
+            </div>
+            
+            <div class="bg-white dark:bg-[#333333] rounded-lg p-4 border-2 border-premium">
+              <h4 class="font-bold text-text-main dark:text-white mb-2">PREMIUM</h4>
+              <p class="text-2xl font-bold text-premium mb-2">R$ 199/mês</p>
+              <ul class="text-sm text-slate-600 dark:text-slate-400 space-y-1 mb-4">
+                <li>• Todas as áreas incluídas</li>
+                <li>• Sessões ilimitadas</li>
+                <li>• Suporte 24/7</li>
+                <li>• Mentorias personalizadas</li>
+              </ul>
+              <button onclick="window.location.href='../planos/?tier=premium'" class="w-full bg-premium text-gray-800 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                Upgrade para PREMIUM
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer class="sticky bottom-0 border-t border-slate-200 bg-background-light/90 pt-2 backdrop-blur-sm dark:border-slate-800 dark:bg-background-dark/90">
+      <nav class="flex justify-around">
+        <a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="../dashboard/">
+          <div class="flex h-8 items-center justify-center">
+            <span class="material-symbols-outlined">home</span>
+          </div>
+          <p class="text-xs font-medium">Home</p>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-primary" href="../areas/">
+          <div class="flex h-8 items-center justify-center">
+            <span class="material-symbols-outlined">explore</span>
+          </div>
+          <p class="text-xs font-bold">Áreas</p>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="../mentorias/">
+          <div class="flex h-8 items-center justify-center">
+            <span class="material-symbols-outlined">school</span>
+          </div>
+          <p class="text-xs font-medium">Mentorias</p>
+        </a>
+        <a class="flex flex-col items-center gap-1 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary" href="../perfil/">
+          <div class="flex h-8 items-center justify-center">
+            <span class="material-symbols-outlined">person</span>
+          </div>
+          <p class="text-xs font-medium">Perfil</p>
+        </a>
+      </nav>
+    </footer>
+  </div>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    class AreasMentoriaPage {
+      constructor() {
+        this.authService = authService;
+        this.currentUser = null;
+        this.userPlan = 'basic'; // basic, pro, premium
+        this.init();
+      }
+
+      async init() {
+        try {
+          console.log('🚀 Iniciando página de áreas de mentoria...');
+          this.showLoading(true);
+
+          // Verificar autenticação
+          const isAuthenticated = await this.checkAuthentication();
+          
+          if (!isAuthenticated) {
+            console.log('❌ Não autenticado, redirecionando...');
+            this.redirectToLogin();
+            return;
+          }
+
+          // Carregar dados do usuário e plano
+          await this.loadUserData();
+          
+          // Atualizar UI baseada no plano
+          this.updateUI();
+          this.setupEventListeners();
+          
+          // Esconder loading e mostrar conteúdo
+          this.showLoading(false);
+          this.showContent(true);
+          
+          console.log('✅ Página de áreas carregada com sucesso');
+
+        } catch (error) {
+          console.error('💥 Erro ao carregar áreas:', error);
+          this.showError('Erro ao carregar áreas de mentoria');
+        }
+      }
+
+      async checkAuthentication() {
+        const token = localStorage.getItem('fin_token');
+        
+        if (!token) {
+          console.log('❌ Token não encontrado');
+          return false;
+        }
+
+        // Verificar com o backend
+        const profile = await this.authService.getProfile();
+        if (!profile.success) {
+          console.log('❌ Perfil não carregado:', profile.message);
+          return false;
+        }
+
+        this.currentUser = profile.data.user;
+        return true;
+      }
+
+      async loadUserData() {
+        try {
+          // Em produção, isso viria da API
+          // Por enquanto, vamos simular com dados mock
+          const userData = JSON.parse(localStorage.getItem('fin_user') || '{}');
+          
+          // Definir plano baseado no usuário (em produção viria do backend)
+          this.userPlan = userData.plan || 'basic';
+          
+          console.log(`📋 Plano do usuário: ${this.userPlan}`);
+
+        } catch (error) {
+          console.error('❌ Erro ao carregar dados do usuário:', error);
+          throw error;
+        }
+      }
+
+      updateUI() {
+        if (!this.currentUser) return;
+
+        // Atualizar informações do usuário
+        const userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+        document.getElementById('dashboard-user').textContent = `Olá, ${userName}! Escolha uma área para começar.`;
+
+        // Atualizar informações do plano
+        this.updatePlanInfo();
+        
+        // Configurar acesso às áreas baseado no plano
+        this.setupAreaAccess();
+      }
+
+      updatePlanInfo() {
+        const planInfo = {
+          basic: {
+            name: 'Plano BÁSICO',
+            description: 'Acesso à área FIN',
+            available: 1,
+            total: 6,
+            progress: 17
+          },
+          pro: {
+            name: 'Plano PRO',
+            description: 'Acesso às áreas FIN, TECH e AGRO',
+            available: 3,
+            total: 6,
+            progress: 50
+          },
+          premium: {
+            name: 'Plano PREMIUM',
+            description: 'Acesso a todas as áreas',
+            available: 6,
+            total: 6,
+            progress: 100
+          }
+        };
+
+        const info = planInfo[this.userPlan];
+        
+        document.getElementById('user-plan').textContent = info.name;
+        document.getElementById('plan-description').textContent = info.description;
+        document.getElementById('available-areas').textContent = `${info.available}/${info.total}`;
+        document.getElementById('plan-progress').style.width = `${info.progress}%`;
+      }
+
+      setupAreaAccess() {
+        const areas = {
+          'tech-area': ['pro', 'premium'],
+          'biz-area': ['premium'],
+          'agro-area': ['pro', 'premium'],
+          'life-area': ['premium'],
+          'health-area': ['premium']
+        };
+
+        // Para cada área, verificar se o usuário tem acesso
+        Object.entries(areas).forEach(([areaId, allowedPlans]) => {
+          const areaElement = document.getElementById(areaId);
+          const lockElement = document.getElementById(areaId.replace('area', 'lock'));
+          
+          if (allowedPlans.includes(this.userPlan)) {
+            // Usuário tem acesso - transformar em link
+            const areaName = areaId.split('-')[0].toUpperCase();
+            areaElement.innerHTML = areaElement.innerHTML.replace(
+              '<div class="relative w-full overflow-hidden rounded-xl">',
+              `<a href="../mentores/?area=${areaName}" class="block"><div class="relative w-full overflow-hidden rounded-xl border-2 border-primary">`
+            ).replace('</div>', '</div></a>');
+            
+            // Remover overlay de bloqueio
+            if (lockElement) {
+              lockElement.style.display = 'none';
+            }
+            
+            // Atualizar badge para "Incluído"
+            const badge = areaElement.querySelector('.absolute.top-2.right-2 span');
+            if (badge) {
+              badge.className = 'bg-success text-white text-xs px-2 py-1 rounded-full font-medium';
+              badge.textContent = 'Incluído';
+            }
+          } else {
+            // Usuário não tem acesso - manter bloqueado
+            if (lockElement) {
+              lockElement.style.opacity = '0';
+              lockElement.style.display = 'flex';
+            }
+          }
+        });
+      }
+
+      setupEventListeners() {
+        // Adicionar event listeners para áreas bloqueadas
+        document.querySelectorAll('[id$="-area"]').forEach(area => {
+          if (!area.querySelector('a')) {
+            area.addEventListener('click', (e) => {
+              e.preventDefault();
+              const lockElement = area.querySelector('[id$="-lock"]');
+              if (lockElement) {
+                lockElement.style.opacity = '1';
+                setTimeout(() => {
+                  lockElement.style.opacity = '0';
+                }, 3000);
+              }
+            });
+          }
+        });
+      }
+
+      showLoading(show) {
+        const loadingElement = document.getElementById('loading-state');
+        if (loadingElement) {
+          loadingElement.style.display = show ? 'flex' : 'none';
+        }
+      }
+
+      showContent(show) {
+        const contentElement = document.getElementById('mentorias-content');
+        if (contentElement) {
+          contentElement.style.display = show ? 'block' : 'none';
+        }
+      }
+
+      redirectToLogin() {
+        window.location.href = '../login/';
+      }
+    }
+
+    // Inicializar quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      new AreasMentoriaPage();
+    });
+    // Tema inicial - SEMPRE light por padrão
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      // Força tema light mesmo se o sistema for dark
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  </script>
+</body>
+</html>

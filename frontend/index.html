@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIN - Mentoria Especializada em Finanças</title>
+  <link rel="stylesheet" href="../css/base.css">
+  <link rel="stylesheet" href="../css/pages/home.css">
+  <link href="./dist/output.css" rel="stylesheet">
+  <link rel="icon" href="src/public/finev.ico" type="image/x-icon">
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+  <script src="../js/style.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+
+    .category-tile {
+      transition: all 0.3s ease;
+    }
+
+    .category-tile:hover {
+      transform: translateY(-5px);
+    }
+
+    .mentor-card {
+      transition: all 0.3s ease;
+    }
+
+    .mentor-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+
+    .testimonial-card {
+      transition: all 0.3s ease;
+    }
+
+    .testimonial-card:hover {
+      transform: scale(1.02);
+    }
+
+    .hero-bg {
+      background: linear-gradient(135deg, #FF7A00 0%, #FF9A3D 100%);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <span class="text-2xl font-extrabold text-primary">FIN</span>
+          <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Mentoria</span>
+        </div>
+
+        <nav class="hidden md:flex space-x-8">
+          <a href="#" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Início</a>
+          <a href="#"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="#"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Programas</a>
+          <a href="#" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Sobre</a>
+        </nav>
+
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle"
+            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path id="theme-icon" fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+          <button
+            class="hidden md:block px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors"
+            onclick="window.location.href='/pages/login';">
+            Entrar
+          </button>
+          <button
+            class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 transition-colors"
+            onclick="window.location.href='/pages/register';">
+            Cadastrar
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="relative flex flex-col min-h-screen">
+    <div class="flex-grow">
+      <div class="absolute top-0 left-0 w-full h-96 hero-bg">
+        <div class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark to-transparent">
+        </div>
+      </div>
+      <div class="relative z-10 flex flex-col items-center justify-end h-full px-6 pt-64 pb-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-text-main dark:text-white">Bem-vindo à FIN</h1>
+        <p class="mt-4 text-base md:text-lg text-slate-600 dark:text-slate-300 max-w-md md:max-w-xl">
+          Desbloqueie seu potencial com mentoria especializada em finanças, tecnologia, negócios e mais. Junte-se a uma
+          comunidade de aprendizes e líderes.
+        </p>
+        <div class="mt-8 grid grid-cols-3 gap-4 text-center max-w-md">
+          <div id="tile-fin" class="category-tile p-4 bg-primary/10 dark:bg-primary/20 rounded-xl cursor-pointer">
+            <span class="text-2xl font-bold text-primary">FIN</span>
+            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Finanças</p>
+          </div>
+          <div class="category-tile p-4 bg-slate-200/50 dark:bg-[#333333]/20 rounded-xl opacity-60">
+            <span class="text-2xl font-bold text-slate-500 dark:text-slate-400">TECH</span>
+            <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">Em Breve</p>
+          </div>
+          <div class="category-tile p-4 bg-slate-200/50 dark:bg-[#333333]/20 rounded-xl opacity-60">
+            <span class="text-2xl font-bold text-slate-500 dark:text-slate-400">BIZ</span>
+            <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">Em Breve</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 pb-8 pt-4 text-center">
+      <button id="get-started-btn"
+        class="w-full md:w-auto h-12 px-8 text-base font-bold text-white transition-colors duration-200 rounded-lg bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl">
+        Começar Agora
+      </button>
+    </div>
+  </div>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-white dark:bg-[#222222]">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-text-main dark:text-white">Por que Escolher a Mentoria FIN?</h2>
+        <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          Nossa plataforma conecta você com especialistas do setor que fornecem orientação personalizada para acelerar
+          seu crescimento profissional.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center p-6 rounded-xl bg-background-light dark:bg-[#333333]">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Mentores Especializados</h3>
+          <p class="text-slate-600 dark:text-slate-300">
+            Conecte-se com profissionais experientes que possuem experiência prática em instituições financeiras de
+            elite.
+          </p>
+        </div>
+
+        <div class="text-center p-6 rounded-xl bg-background-light dark:bg-[#333333]">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Orientação Personalizada</h3>
+          <p class="text-slate-600 dark:text-slate-300">
+            Receba conselhos e roteiros personalizados projetados especificamente para seus objetivos e aspirações de
+            carreira.
+          </p>
+        </div>
+
+        <div class="text-center p-6 rounded-xl bg-background-light dark:bg-[#333333]">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9c-5 0-9-4-9-9s4-9 9-9" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Crescimento Profissional</h3>
+          <p class="text-slate-600 dark:text-slate-300">
+            Acelere seu desenvolvimento profissional com insights que ajudam você a navegar pelo setor financeiro.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mentors Section -->
+  <section class="py-16 bg-background-light dark:bg-background-dark">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-text-main dark:text-white">Conheça Nossos Mentores de Finanças</h2>
+        <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          Aprenda com profissionais com anos de experiência em banking de investimento, gestão de ativos, fintech e
+          muito mais.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="mentor-card bg-white dark:bg-[#222222] rounded-xl overflow-hidden shadow-md">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div
+                class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
+                MS
+              </div>
+              <div class="ml-4">
+                <h3 class="font-bold text-text-main dark:text-white">Maria Silva</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Diretora de Banking de Investimento</p>
+              </div>
+            </div>
+            <p class="mt-4 text-slate-600 dark:text-slate-300 text-sm">
+              15+ anos em M&A e mercados de capitais. Ex-Vice-Presidente no Goldman Sachs.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">M&A</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Mercados de Capitais</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Avaliação</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mentor-card bg-white dark:bg-[#222222] rounded-xl overflow-hidden shadow-md">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div
+                class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
+                RS
+              </div>
+              <div class="ml-4">
+                <h3 class="font-bold text-text-main dark:text-white">Ricardo Santos</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Gestor de Carteiras</p>
+              </div>
+            </div>
+            <p class="mt-4 text-slate-600 dark:text-slate-300 text-sm">
+              Gerencia US$ 2B+ em ativos. Especializado em mercados emergentes e investimentos ESG.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Gestão de Ativos</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">ESG</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Mercados Emergentes</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mentor-card bg-white dark:bg-[#222222] rounded-xl overflow-hidden shadow-md">
+          <div class="p-6">
+            <div class="flex items-center">
+              <div
+                class="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
+                AF
+              </div>
+              <div class="ml-4">
+                <h3 class="font-bold text-text-main dark:text-white">Ana Ferreira</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Fundadora de Fintech</p>
+              </div>
+            </div>
+            <p class="mt-4 text-slate-600 dark:text-slate-300 text-sm">
+              Construiu e vendeu duas startups de fintech. Especialista em bancos digitais e pagamentos.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Fintech</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Startups</span>
+              <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">Banco Digital</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-12">
+        <button
+          class="px-6 py-3 text-base font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+          Ver Todos os Mentores
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="py-16 bg-white dark:bg-[#222222]">
+    <div class="container mx-auto px-6">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl font-bold text-text-main dark:text-white">Histórias de Sucesso</h2>
+        <p class="mt-4 text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
+          Ouça de profissionais que aceleraram suas carreiras com a mentoria FIN.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="testimonial-card bg-background-light dark:bg-[#333333] p-6 rounded-xl">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              JP
+            </div>
+            <div class="ml-4">
+              <h3 class="font-bold text-text-main dark:text-white">João Pereira</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">Analista de Banking de Investimento</p>
+            </div>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 italic">
+            "A FIN me conectou com um mentor que me ajudou a navegar pelo complexo processo de recrutamento. Consegui
+            meu emprego dos sonhos em um banco de investimento de elite em apenas 3 meses."
+          </p>
+        </div>
+
+        <div class="testimonial-card bg-background-light dark:bg-[#333333] p-6 rounded-xl">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              CS
+            </div>
+            <div class="ml-4">
+              <h3 class="font-bold text-text-main dark:text-white">Carla Sousa</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">Analista Financeira</p>
+            </div>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 italic">
+            "Meu mentor forneceu orientação inestimável na transição de contabilidade para análise financeira. O roteiro
+            personalizado fez toda a diferença na minha mudança de carreira."
+          </p>
+        </div>
+
+        <div class="testimonial-card bg-background-light dark:bg-[#333333] p-6 rounded-xl">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
+              MF
+            </div>
+            <div class="ml-4">
+              <h3 class="font-bold text-text-main dark:text-white">Miguel Fernandes</h3>
+              <p class="text-sm text-slate-500 dark:text-slate-400">Gestor de Patrimônio</p>
+            </div>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 italic">
+            "As habilidades técnicas e insights do setor que adquiri através da mentoria FIN me ajudaram a dobrar minha
+            carteira de clientes em menos de um ano. Altamente recomendado!"
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-primary text-white">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-3xl font-bold">Pronto para Acelerar Sua Carreira Financeira?</h2>
+      <p class="mt-4 max-w-2xl mx-auto">
+        Junte-se à FIN hoje e seja conectado com um mentor que pode ajudá-lo a alcançar seus objetivos profissionais.
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+        <button
+          class="px-8 py-3 text-base font-medium bg-white text-primary rounded-lg hover:bg-slate-100 transition-colors">
+          Encontrar um Mentor
+        </button>
+        <button
+          class="px-8 py-3 text-base font-medium border border-white rounded-lg hover:bg-white/10 transition-colors">
+          Saiba Mais
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-background-dark text-white py-12">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center">
+            <span class="text-2xl font-extrabold text-primary">FIN</span>
+            <span class="ml-2 text-sm font-medium">Mentoria</span>
+          </div>
+          <p class="mt-4 text-slate-400 text-sm">
+            Conectando profissionais aspirantes com mentores especializados em finanças e além.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-lg mb-4">Plataforma</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="#" class="hover:text-white transition-colors">Para Mentorados</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Para Mentores</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Programas</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Preços</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-lg mb-4">Empresa</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="#" class="hover:text-white transition-colors">Sobre Nós</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Carreiras</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Contato</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-lg mb-4">Conectar</h3>
+          <ul class="space-y-2 text-slate-400">
+            <li><a href="#" class="hover:text-white transition-colors">LinkedIn</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Twitter</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Instagram</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">Facebook</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400 text-sm">
+        <p>© 2023 FIN Mentoria. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Funcionalidade de alternância de tema
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
+
+    // Verificar preferência de tema salva ou respeitar preferência do SO
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Funcionalidade do botão Começar Agora
+    document.getElementById('get-started-btn').addEventListener('click', function () {
+      // Em uma implementação real, isso redirecionaria para uma página de cadastro
+      alert('Redirecionando para a página de cadastro...');
+    });
+
+    // Adicionar interatividade ao tile FIN
+    document.getElementById('tile-fin').addEventListener('click', function () {
+      // Em uma implementação real, isso navegaria para a página de programas de mentoria em finanças
+      alert('Navegando para programas de mentoria em Finanças...');
+    });
+  </script>
+</body>
+
+</html>

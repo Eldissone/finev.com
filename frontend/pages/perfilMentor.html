@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>FIN - Perfil do Mentor</title>
+  <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../js/style.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF7A00",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#1A1A1A",
+                        "text-main": "#333333",
+                        "success": "#2ECC71",
+                        "pro": "#8B5CF6",
+                        "premium": "#FFD700",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            min-height: 100vh;
+            background-color: #f6f7f8;
+        }
+
+        .dark body {
+            background-color: #1A1A1A;
+        }
+
+        .module-card {
+            transition: all 0.3s ease;
+        }
+
+        .module-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+    <!-- Header -->
+    <header
+        class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="../pages/mentores.html" class="flex items-center">
+                        <span class="text-2xl font-extrabold text-primary">FIN</span>
+                        <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Mentor</span>
+                    </a>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="../dashboard/"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Dashboard</a>
+                    <a href="../mentores/"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+                    <a href="../mentorias/"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
+                    <a href="../perfil/"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle"
+                        class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path id="theme-icon" fill-rule="evenodd"
+                                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button id="schedule-session"
+                        class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-opacity-90 transition-colors">
+                        Agendar Sessão
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loading-state"
+        class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p class="mt-4 text-text-main dark:text-white">Carregando perfil do mentor...</p>
+        </div>
+    </div>
+
+    <main id="mentor-content" class="container mx-auto px-6 py-8 hidden">
+        <div class="max-w-6xl mx-auto">
+            <!-- Perfil do Mentor -->
+            <div class="bg-white dark:bg-[#333333] rounded-xl p-8 shadow-sm mb-8">
+                <div class="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+                    <!-- Avatar e Informações Básicas -->
+                    <div class="text-center lg:text-left">
+                        <img id="mentor-avatar" src="" alt=""
+                            class="w-32 h-32 rounded-full mx-auto lg:mx-0 mb-4 object-cover">
+                        <h1 id="mentor-name" class="text-2xl font-bold text-text-main dark:text-white mb-2">
+                            Carregando...</h1>
+                        <p id="mentor-role" class="text-slate-600 dark:text-slate-300 mb-1">Carregando...</p>
+                        <p id="mentor-company" class="text-slate-500 dark:text-slate-400 text-sm mb-4">Carregando...</p>
+
+                        <div class="flex items-center justify-center lg:justify-start space-x-4 mb-4">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined text-yellow-400 mr-1">star</span>
+                                <span id="mentor-rating" class="font-medium">0.0</span>
+                                <span class="text-slate-500 text-sm ml-1">(<span id="mentor-reviews">0</span>)</span>
+                            </div>
+                            <div class="flex items-center text-slate-500">
+                                <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                                <span id="mentor-experience">0 anos</span>
+                            </div>
+                            <span id="mentor-plan-badge" class="px-2 py-1 rounded-full text-xs font-medium">BASIC</span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 justify-center lg:justify-start mb-4">
+                            <!-- Áreas e especialidades serão carregadas aqui -->
+                        </div>
+
+                        <div class="flex flex-wrap gap-3 justify-center lg:justify-start">
+                            <button id="start-live-session"
+                                class="px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center">
+                                <span class="material-symbols-outlined mr-2">videocam</span>
+                                Sessão Ao Vivo
+                            </button>
+                            <button id="contact-mentor"
+                                class="px-6 py-3 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center">
+                                <span class="material-symbols-outlined mr-2">mail</span>
+                                Enviar Mensagem
+                            </button>
+                            <button id="favorite-mentor"
+                                class="p-3 border border-slate-300 dark:border-slate-600 text-slate-400 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <span class="material-symbols-outlined">favorite</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Estatísticas e Preços -->
+                    <div class="flex-1 bg-slate-50 dark:bg-slate-800 rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-text-main dark:text-white mb-4">Informações da Mentoria</h3>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Preço por hora</p>
+                                <p id="mentor-price" class="text-2xl font-bold text-primary">R$ 0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Sessões realizadas</p>
+                                <p id="mentor-sessions" class="text-2xl font-bold text-success">0</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Taxa de resposta</p>
+                                <p id="mentor-response-rate" class="text-2xl font-bold text-pro">0%</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-600 dark:text-slate-400">Tempo médio</p>
+                                <p id="mentor-avg-time" class="text-2xl font-bold text-premium">0min</p>
+                            </div>
+                        </div>
+
+                        <!-- Horários Disponíveis -->
+                        <div>
+                            <h4 class="font-medium text-text-main dark:text-white mb-3">Próximos Horários</h4>
+                            <div id="available-slots" class="space-y-2">
+                                <!-- Horários serão carregados aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Conteúdo Principal -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Módulos do Curso -->
+                    <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-text-main dark:text-white">Módulos do Curso</h2>
+                            <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                                <span id="completed-modules">0</span>/<span id="total-modules">0</span> concluídos
+                            </div>
+                        </div>
+                        <div id="modules-list" class="space-y-4">
+                            <!-- Módulos serão carregados aqui -->
+                        </div>
+                    </section>
+
+                    <!-- Sessões Ao Vivo Agendadas -->
+                    <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold text-text-main dark:text-white">Próximas Sessões Ao Vivo</h2>
+                            <button id="view-all-sessions"
+                                class="text-primary hover:text-orange-600 text-sm font-medium">
+                                Ver todas
+                            </button>
+                        </div>
+                        <div id="live-sessions" class="space-y-4">
+                            <!-- Sessões serão carregadas aqui -->
+                        </div>
+                    </section>
+
+                    <!-- Materiais de Apoio -->
+                    <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+                        <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Materiais de Apoio</h2>
+                        <div id="support-materials" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Materiais serão carregados aqui -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="space-y-6">
+                    <!-- Agendamento Rápido -->
+                    <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-text-main dark:text-white mb-4">Agendar Sessão</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Data</label>
+                                <input type="date" id="session-date"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Horário</label>
+                                <select id="session-time"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="">Selecione um horário</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Duração</label>
+                                <select id="session-duration"
+                                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                                    <option value="30">30 minutos - R$ 75</option>
+                                    <option value="60">60 minutos - R$ 150</option>
+                                    <option value="90">90 minutos - R$ 200</option>
+                                </select>
+                            </div>
+                            <button id="confirm-booking"
+                                class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                                Confirmar Agendamento
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Acesso Rápido -->
+                    <section class="bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-text-main dark:text-white mb-4">Acesso Rápido</h3>
+                        <div class="space-y-3">
+                            <button id="join-live-room"
+                                class="w-full flex items-center justify-between p-3 rounded-lg bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors">
+                                <div class="flex items-center">
+                                    <span class="material-symbols-outlined mr-3">videocam</span>
+                                    <span class="font-medium">Sala ao Vivo</span>
+                                </div>
+                                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                            </button>
+
+                            <button id="download-materials"
+                                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <div class="flex items-center">
+                                    <span
+                                        class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">download</span>
+                                    <span class="font-medium text-text-main dark:text-white">Materiais</span>
+                                </div>
+                                <span class="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+                            </button>
+
+                            <button id="view-progress"
+                                class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <div class="flex items-center">
+                                    <span
+                                        class="material-symbols-outlined text-slate-600 dark:text-slate-400 mr-3">trending_up</span>
+                                    <span class="font-medium text-text-main dark:text-white">Meu Progresso</span>
+                                </div>
+                                <span class="material-symbols-outlined text-slate-400 text-sm">arrow_forward</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Agendamento -->
+    <div id="booking-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-[#333333] rounded-xl p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-text-main dark:text-white mb-4">Confirmar Agendamento</h3>
+            <div id="booking-details" class="space-y-3 mb-6">
+                <!-- Detalhes do agendamento serão preenchidos aqui -->
+            </div>
+            <div class="flex space-x-3">
+                <button id="cancel-booking"
+                    class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                </button>
+                <button id="confirm-booking-final"
+                    class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Sessão Ao Vivo -->
+    <div id="live-session-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-[#333333] rounded-xl p-6 max-w-4xl w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-text-main dark:text-white">Sessão Ao Vivo</h3>
+                <button id="close-live-modal" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="video-container mb-4 bg-black rounded-lg">
+                <!-- Video player será inserido aqui -->
+                <div id="live-video-placeholder" class="w-full h-full flex items-center justify-center text-white">
+                    <div class="text-center">
+                        <span class="material-symbols-outlined text-4xl mb-2">videocam</span>
+                        <p>Conectando à sessão ao vivo...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex space-x-3">
+                <button id="toggle-audio"
+                    class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                    <span class="material-symbols-outlined align-middle mr-2">mic</span>
+                    Áudio
+                </button>
+                <button id="toggle-video"
+                    class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                    <span class="material-symbols-outlined align-middle mr-2">videocam</span>
+                    Vídeo
+                </button>
+                <button id="share-screen"
+                    class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors">
+                    <span class="material-symbols-outlined align-middle mr-2">screen_share</span>
+                    Tela
+                </button>
+                <button id="end-call"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors ml-auto">
+                    <span class="material-symbols-outlined align-middle mr-2">call_end</span>
+                    Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script>
+        class MentorProfilePage {
+            constructor() {
+                this.authService = authService;
+                this.currentUser = null;
+                this.mentorData = null;
+                this.modules = [];
+                this.liveSessions = [];
+                this.availableSlots = [];
+                this.init();
+            }
+
+            async init() {
+                try {
+                    console.log('🚀 Iniciando perfil do mentor...');
+                    this.showLoading(true);
+
+                    // Verificar autenticação
+                    const isAuthenticated = await this.checkAuthentication();
+
+                    if (!isAuthenticated) {
+                        console.log('❌ Não autenticado, redirecionando...');
+                        this.redirectToLogin();
+                        return;
+                    }
+
+                    // Carregar dados do mentor
+                    await this.loadMentorData();
+
+                    // Atualizar UI
+                    this.updateUI();
+                    this.setupEventListeners();
+
+                    // Esconder loading e mostrar conteúdo
+                    this.showLoading(false);
+                    this.showContent(true);
+
+                    console.log('✅ Perfil do mentor carregado com sucesso');
+
+                } catch (error) {
+                    console.error('💥 Erro ao carregar perfil do mentor:', error);
+                    this.showError('Erro ao carregar perfil do mentor');
+                }
+            }
+
+            async checkAuthentication() {
+                const token = localStorage.getItem('fin_token');
+
+                if (!token) {
+                    console.log('❌ Token não encontrado');
+                    return false;
+                }
+
+                // Verificar com o backend
+                const profile = await this.authService.getProfile();
+                if (!profile.success) {
+                    console.log('❌ Perfil não carregado:', profile.message);
+                    return false;
+                }
+
+                this.currentUser = profile.data.user;
+                return true;
+            }
+
+            async loadMentorData() {
+                try {
+                    // Obter ID do mentor da URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const mentorId = urlParams.get('id') || 1;
+
+                    // Dados mock - em produção viriam da API
+                    this.mentorData = {
+                        id: mentorId,
+                        name: 'Carlos Mendes',
+                        role: 'Analista Sênior de Investimentos',
+                        company: 'XP Investimentos',
+                        area: 'FIN',
+                        expertise: ['investimentos', 'mercado financeiro', 'análise técnica'],
+                        rating: 4.8,
+                        reviews: 127,
+                        experience: '12 anos',
+                        price: 150,
+                        plan: 'pro',
+                        available: true,
+                        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                        description: 'Especialista em análise de investimentos e gestão de carteiras. Mais de 10 anos de experiência no mercado financeiro.',
+                        responseRate: 95,
+                        totalSessions: 450,
+                        avgSessionTime: 55
+                    };
+
+                    // Módulos do curso
+                    this.modules = [
+                        {
+                            id: 1,
+                            title: 'Introdução ao Mercado Financeiro',
+                            description: 'Conceitos básicos e fundamentos do mercado financeiro',
+                            duration: '45 min',
+                            type: 'video',
+                            completed: true,
+                            resources: ['PDF', 'Exercícios', 'Quiz']
+                        },
+                        {
+                            id: 2,
+                            title: 'Análise Fundamentalista',
+                            description: 'Avaliação de empresas através de indicadores financeiros',
+                            duration: '60 min',
+                            type: 'video',
+                            completed: true,
+                            resources: ['Planilha', 'Casos Práticos']
+                        },
+                        {
+                            id: 3,
+                            title: 'Análise Técnica - Básico',
+                            description: 'Introdução aos gráficos e indicadores técnicos',
+                            duration: '50 min',
+                            type: 'video',
+                            completed: false,
+                            resources: ['PDF', 'Gráficos Interativos']
+                        },
+                        {
+                            id: 4,
+                            title: 'Workshop Ao Vivo - Casos Práticos',
+                            description: 'Aplicação prática dos conceitos aprendidos',
+                            duration: '90 min',
+                            type: 'live',
+                            completed: false,
+                            resources: ['Gravação', 'Material de Apoio']
+                        },
+                        {
+                            id: 5,
+                            title: 'Gestão de Risco e Portfolio',
+                            description: 'Estratégias avançadas de gestão de risco',
+                            duration: '55 min',
+                            type: 'video',
+                            completed: false,
+                            resources: ['Calculadora', 'Simulador']
+                        }
+                    ];
+
+                    // Sessões ao vivo agendadas
+                    this.liveSessions = [
+                        {
+                            id: 1,
+                            title: 'Workshop: Análise de Ações',
+                            date: '30/10/2024',
+                            time: '14:00',
+                            duration: '90 min',
+                            participants: 12,
+                            maxParticipants: 20,
+                            joinLink: '#'
+                        },
+                        {
+                            id: 2,
+                            title: 'Q&A: Dúvidas Gerais',
+                            date: '02/11/2024',
+                            time: '19:00',
+                            duration: '60 min',
+                            participants: 8,
+                            maxParticipants: 15,
+                            joinLink: '#'
+                        }
+                    ];
+
+                    // Horários disponíveis
+                    this.availableSlots = this.generateAvailableSlots();
+
+                } catch (error) {
+                    console.error('❌ Erro ao carregar dados:', error);
+                    throw error;
+                }
+            }
+
+            generateAvailableSlots() {
+                const slots = [];
+                const today = new Date();
+
+                for (let i = 1; i <= 7; i++) {
+                    const date = new Date(today);
+                    date.setDate(today.getDate() + i);
+
+                    if (date.getDay() !== 0 && date.getDay() !== 6) { // Não incluir fins de semana
+                        for (let hour = 9; hour <= 18; hour += 2) {
+                            slots.push({
+                                date: date.toISOString().split('T')[0],
+                                time: `${hour}:00`,
+                                available: Math.random() > 0.3 // 70% de chance de estar disponível
+                            });
+                        }
+                    }
+                }
+
+                return slots;
+            }
+
+            updateUI() {
+                if (!this.mentorData) return;
+
+                // Atualizar informações básicas do mentor
+                document.getElementById('mentor-avatar').src = this.mentorData.avatar;
+                document.getElementById('mentor-name').textContent = this.mentorData.name;
+                document.getElementById('mentor-role').textContent = this.mentorData.role;
+                document.getElementById('mentor-company').textContent = this.mentorData.company;
+                document.getElementById('mentor-rating').textContent = this.mentorData.rating;
+                document.getElementById('mentor-reviews').textContent = this.mentorData.reviews;
+                document.getElementById('mentor-experience').textContent = this.mentorData.experience;
+                document.getElementById('mentor-price').textContent = `R$ ${this.mentorData.price}`;
+                document.getElementById('mentor-sessions').textContent = this.mentorData.totalSessions;
+                document.getElementById('mentor-response-rate').textContent = `${this.mentorData.responseRate}%`;
+                document.getElementById('mentor-avg-time').textContent = `${this.mentorData.avgSessionTime}min`;
+
+                // Atualizar badge do plano
+                const planBadge = document.getElementById('mentor-plan-badge');
+                planBadge.textContent = this.mentorData.plan.toUpperCase();
+                planBadge.className = `px-2 py-1 rounded-full text-xs font-medium ${this.mentorData.plan === 'premium' ? 'bg-premium text-gray-800' :
+                    this.mentorData.plan === 'pro' ? 'bg-pro text-white' :
+                        'bg-primary text-white'
+                    }`;
+
+                // Atualizar áreas e especialidades
+                const expertiseContainer = document.querySelector('.flex-wrap.gap-2');
+                expertiseContainer.innerHTML = `
+          <span class="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full">${this.mentorData.area}</span>
+          ${this.mentorData.expertise.map(exp =>
+                    `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-sm px-3 py-1 rounded-full">${exp}</span>`
+                ).join('')}
+        `;
+
+                // Atualizar módulos
+                this.updateModulesList();
+
+                // Atualizar sessões ao vivo
+                this.updateLiveSessions();
+
+                // Atualizar horários disponíveis
+                this.updateAvailableSlots();
+
+                // Atualizar materiais de apoio
+                this.updateSupportMaterials();
+            }
+
+            updateModulesList() {
+                const container = document.getElementById('modules-list');
+                const completedCount = this.modules.filter(m => m.completed).length;
+
+                document.getElementById('completed-modules').textContent = completedCount;
+                document.getElementById('total-modules').textContent = this.modules.length;
+
+                container.innerHTML = this.modules.map(module => `
+          <div class="module-card bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${module.title}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${module.description}</p>
+                <div class="flex items-center space-x-4 text-xs text-slate-500 dark:text-slate-400">
+                  <span class="flex items-center">
+                    <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                    ${module.duration}
+                  </span>
+                  <span class="flex items-center">
+                    <span class="material-symbols-outlined text-sm mr-1">${module.type === 'live' ? 'videocam' : 'play_circle'}</span>
+                    ${module.type === 'live' ? 'Ao Vivo' : 'Vídeo'}
+                  </span>
+                </div>
+              </div>
+              <div class="flex items-center space-x-2">
+                ${module.completed ? `
+                  <span class="bg-success text-white text-xs px-2 py-1 rounded-full">Concluído</span>
+                ` : `
+                  <button onclick="mentorProfile.startModule(${module.id})" class="px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-opacity-90 transition-colors">
+                    Iniciar
+                  </button>
+                `}
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              ${module.resources.map(resource => `
+                <span class="bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs px-2 py-1 rounded border border-slate-200 dark:border-slate-600">
+                  ${resource}
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+            }
+
+            updateLiveSessions() {
+                const container = document.getElementById('live-sessions');
+
+                if (this.liveSessions.length === 0) {
+                    container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">event</span>
+              <p>Nenhuma sessão ao vivo agendada</p>
+            </div>
+          `;
+                    return;
+                }
+
+                container.innerHTML = this.liveSessions.map(session => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.title}</h3>
+                <div class="flex items-center space-x-4 text-sm text-slate-600 dark:text-slate-400">
+                  <span class="flex items-center">
+                    <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
+                    ${session.date} às ${session.time}
+                  </span>
+                  <span class="flex items-center">
+                    <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                    ${session.duration}
+                  </span>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-slate-600 dark:text-slate-400 mb-1">
+                  ${session.participants}/${session.maxParticipants} participantes
+                </div>
+                <button onclick="mentorProfile.joinLiveSession(${session.id})" class="px-3 py-1 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors">
+                  Entrar
+                </button>
+              </div>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="bg-red-600 h-2 rounded-full" style="width: ${(session.participants / session.maxParticipants) * 100}%"></div>
+            </div>
+          </div>
+        `).join('');
+            }
+
+            updateAvailableSlots() {
+                const container = document.getElementById('available-slots');
+                const today = new Date().toISOString().split('T')[0];
+                const nextSlots = this.availableSlots
+                    .filter(slot => slot.date >= today && slot.available)
+                    .slice(0, 5);
+
+                if (nextSlots.length === 0) {
+                    container.innerHTML = '<p class="text-sm text-slate-500 dark:text-slate-400">Nenhum horário disponível</p>';
+                    return;
+                }
+
+                container.innerHTML = nextSlots.map(slot => {
+                    const date = new Date(slot.date);
+                    const formattedDate = date.toLocaleDateString('pt-BR');
+                    return `
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-600 dark:text-slate-400">${formattedDate} - ${slot.time}</span>
+              <button onclick="mentorProfile.selectSlot('${slot.date}', '${slot.time}')" class="text-primary hover:text-orange-600 font-medium">
+                Selecionar
+              </button>
+            </div>
+          `;
+                }).join('');
+            }
+
+            updateSupportMaterials() {
+                const container = document.getElementById('support-materials');
+
+                const materials = [
+                    { type: 'pdf', title: 'Ebook - Guia de Investimentos', size: '2.4 MB' },
+                    { type: 'spreadsheet', title: 'Planilha de Análise', size: '1.1 MB' },
+                    { type: 'video', title: 'Gravação - Workshop Passado', size: '156 MB' },
+                    { type: 'link', title: 'Artigos Recomendados', size: 'Link' }
+                ];
+
+                container.innerHTML = materials.map(material => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="material-symbols-outlined text-primary">
+                ${material.type === 'pdf' ? 'description' :
+                        material.type === 'spreadsheet' ? 'table_chart' :
+                            material.type === 'video' ? 'play_circle' : 'link'}
+              </span>
+              <span class="text-xs text-slate-500 dark:text-slate-400">${material.size}</span>
+            </div>
+            <h4 class="font-medium text-text-main dark:text-white text-sm mb-2">${material.title}</h4>
+            <button class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+              ${material.type === 'link' ? 'Acessar' : 'Download'}
+            </button>
+          </div>
+        `).join('');
+            }
+
+            // Métodos de interação
+            startModule(moduleId) {
+                const module = this.modules.find(m => m.id === moduleId);
+                if (module) {
+                    if (module.type === 'live') {
+                        this.joinLiveSession(moduleId);
+                    } else {
+                        // Redirecionar para página do módulo
+                        window.location.href = `../modulo/?id=${moduleId}&mentor=${this.mentorData.id}`;
+                    }
+                }
+            }
+
+            joinLiveSession(sessionId) {
+                const session = this.liveSessions.find(s => s.id === sessionId);
+                if (session) {
+                    this.showLiveSessionModal(session);
+                }
+            }
+
+            showLiveSessionModal(session) {
+                const modal = document.getElementById('live-session-modal');
+                modal.classList.remove('hidden');
+
+                // Simular conexão com serviço de vídeo
+                setTimeout(() => {
+                    const placeholder = document.getElementById('live-video-placeholder');
+                    placeholder.innerHTML = `
+            <div class="text-center">
+              <span class="material-symbols-outlined text-4xl mb-2 text-green-400">check_circle</span>
+              <p>Conectado à sessão: "${session.title}"</p>
+              <p class="text-sm text-green-400">Aguardando o mentor...</p>
+            </div>
+          `;
+                }, 2000);
+            }
+
+            selectSlot(date, time) {
+                document.getElementById('session-date').value = date;
+                this.updateTimeSlots(date);
+
+                // Encontrar e selecionar o horário
+                setTimeout(() => {
+                    const timeSelect = document.getElementById('session-time');
+                    timeSelect.value = time;
+                }, 100);
+            }
+
+            updateTimeSlots(date) {
+                const timeSelect = document.getElementById('session-time');
+                const availableTimes = this.availableSlots
+                    .filter(slot => slot.date === date && slot.available)
+                    .map(slot => slot.time);
+
+                timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+                availableTimes.forEach(time => {
+                    timeSelect.innerHTML += `<option value="${time}">${time}</option>`;
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
+                document.getElementById('schedule-session').addEventListener('click', () => {
+                    document.getElementById('session-date').focus();
+                });
+
+                // Agendamento
+                document.getElementById('session-date').addEventListener('change', (e) => {
+                    this.updateTimeSlots(e.target.value);
+                });
+
+                document.getElementById('confirm-booking').addEventListener('click', () => {
+                    this.showBookingModal();
+                });
+
+                document.getElementById('cancel-booking').addEventListener('click', () => {
+                    document.getElementById('booking-modal').classList.add('hidden');
+                });
+
+                document.getElementById('confirm-booking-final').addEventListener('click', () => {
+                    this.confirmBooking();
+                });
+
+                // Sessão ao vivo
+                document.getElementById('start-live-session').addEventListener('click', () => {
+                    // Iniciar sessão privada com o mentor
+                    this.showLiveSessionModal({
+                        id: 'private',
+                        title: 'Sessão Privada com ' + this.mentorData.name
+                    });
+                });
+
+                document.getElementById('join-live-room').addEventListener('click', () => {
+                    if (this.liveSessions.length > 0) {
+                        this.joinLiveSession(this.liveSessions[0].id);
+                    }
+                });
+
+                document.getElementById('close-live-modal').addEventListener('click', () => {
+                    document.getElementById('live-session-modal').classList.add('hidden');
+                });
+
+                document.getElementById('end-call').addEventListener('click', () => {
+                    document.getElementById('live-session-modal').classList.add('hidden');
+                });
+
+                // Controles de mídia
+                document.getElementById('toggle-audio').addEventListener('click', function () {
+                    this.classList.toggle('bg-slate-200');
+                    this.classList.toggle('bg-red-200');
+                    this.classList.toggle('dark:bg-slate-700');
+                    this.classList.toggle('dark:bg-red-900/20');
+                });
+
+                document.getElementById('toggle-video').addEventListener('click', function () {
+                    this.classList.toggle('bg-slate-200');
+                    this.classList.toggle('bg-red-200');
+                    this.classList.toggle('dark:bg-slate-700');
+                    this.classList.toggle('dark:bg-red-900/20');
+                });
+            }
+
+            showBookingModal() {
+                const date = document.getElementById('session-date').value;
+                const time = document.getElementById('session-time').value;
+                const duration = document.getElementById('session-duration').value;
+
+                if (!date || !time) {
+                    alert('Por favor, selecione data e horário');
+                    return;
+                }
+
+                const durationText = {
+                    '30': '30 minutos',
+                    '60': '60 minutos',
+                    '90': '90 minutos'
+                }[duration];
+
+                const price = {
+                    '30': this.mentorData.price / 2,
+                    '60': this.mentorData.price,
+                    '90': this.mentorData.price * 1.5
+                }[duration];
+
+                document.getElementById('booking-details').innerHTML = `
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Data:</span>
+            <span class="font-medium">${new Date(date).toLocaleDateString('pt-BR')}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Horário:</span>
+            <span class="font-medium">${time}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-600 dark:text-slate-400">Duração:</span>
+            <span class="font-medium">${durationText}</span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200 dark:border-slate-600 pt-2">
+            <span class="text-slate-600 dark:text-slate-400">Total:</span>
+            <span class="font-bold text-primary text-lg">R$ ${price}</span>
+          </div>
+        `;
+
+                document.getElementById('booking-modal').classList.remove('hidden');
+            }
+
+            confirmBooking() {
+                const date = document.getElementById('session-date').value;
+                const time = document.getElementById('session-time').value;
+                const duration = document.getElementById('session-duration').value;
+
+                // Simular agendamento
+                alert(`Sessão agendada com sucesso!\n\nData: ${new Date(date).toLocaleDateString('pt-BR')}\nHorário: ${time}\nDuração: ${duration} minutos`);
+
+                document.getElementById('booking-modal').classList.add('hidden');
+
+                // Limpar formulário
+                document.getElementById('session-date').value = '';
+                document.getElementById('session-time').value = '';
+                document.getElementById('session-duration').value = '60';
+            }
+
+            showLoading(show) {
+                const loadingElement = document.getElementById('loading-state');
+                if (loadingElement) {
+                    loadingElement.style.display = show ? 'flex' : 'none';
+                }
+            }
+
+            showContent(show) {
+                const contentElement = document.getElementById('mentor-content');
+                if (contentElement) {
+                    contentElement.style.display = show ? 'block' : 'none';
+                }
+            }
+
+            redirectToLogin() {
+                window.location.href = '../login/';
+            }
+
+            toggleTheme() {
+                const html = document.documentElement;
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+        }
+
+        // Criar instância global
+        const mentorProfile = new MentorProfilePage();
+
+        // Inicializar quando DOM estiver pronto
+        document.addEventListener('DOMContentLoaded', () => {
+            // Já inicializado no constructor
+        });
+
+        // Tema inicial - SEMPRE light por padrão
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            // Força tema light mesmo se o sistema for dark
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    </script>
+</body>
+
+</html>

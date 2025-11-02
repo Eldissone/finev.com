@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="pt">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FIN - Configurações</title>
+  <link rel="icon" href="../../src/public/finev.ico" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/style.js"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#FF7A00",
+            "background-light": "#f6f7f8",
+            "background-dark": "#1A1A1A",
+            "text-main": "#333333",
+            "success": "#2ECC71",
+          },
+          fontFamily: {
+            "display": ["Manrope"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: 100vh;
+      background-color: #f6f7f8;
+    }
+
+    .dark body {
+      background-color: #1A1A1A;
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .settings-section {
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: #FF7A00;
+      box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+
+  <!-- Header -->
+  <header
+    class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center">
+          <span class="text-2xl font-extrabold text-primary">FIN</span>
+          <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Configurações</span>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="./dashboard.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Dashboard</a>
+          <a href="../pages/areasMentorias.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
+          <a href="../pages/mentores.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="../pages/mentoria.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
+          <a href="../pages/perfil.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
+          <a href="../pages/config.html"
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Configurações</a>
+        </nav>
+        <div class="flex items-center space-x-4">
+          <button id="theme-toggle"
+            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path id="theme-icon" fill-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                clip-rule="evenodd" />
+            </svg>
+          </button>
+          <div class="flex items-center space-x-3">
+            <div
+              class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+              id="user-avatar">U</div>
+            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
+              id="user-name">Usuário</span>
+          </div>
+          <button id="logout-btn"
+            class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div id="loading-state" class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+    <div class="text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+      <p class="mt-4 text-text-main dark:text-white">Carregando configurações...</p>
+    </div>
+  </div>
+
+  <main id="config-content" class="container mx-auto px-6 py-8 hidden">
+    <!-- Breadcrumb -->
+    <div class="mb-6">
+      <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="./dashboard.html" class="inline-flex items-center text-sm font-medium text-text-main dark:text-white hover:text-primary">
+              Dashboard
+            </a>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <span class="mx-2 text-text-main dark:text-white">/</span>
+              <span class="ml-1 text-sm font-medium text-primary md:ml-2">Configurações</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <h1 class="text-3xl font-bold text-text-main dark:text-white">Configurações da Conta</h1>
+    <p class="text-slate-600 dark:text-slate-300 mt-2">Gerencie suas informações pessoais, senha e preferências</p>
+
+    <!-- Conteúdo das Configurações -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Menu Lateral -->
+      <div class="lg:col-span-1">
+        <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm sticky top-24">
+          <h3 class="text-lg font-semibold text-text-main dark:text-white mb-4">Configurações</h3>
+          <ul class="space-y-2">
+            <li>
+              <button id="tab-personal" class="tab-button w-full text-left px-4 py-2 rounded-lg bg-primary/10 text-primary font-medium transition-colors" data-tab="personal">
+                Dados Pessoais
+              </button>
+            </li>
+            <li>
+              <button id="tab-password" class="tab-button w-full text-left px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors" data-tab="password">
+                Segurança e Senha
+              </button>
+            </li>
+            <li>
+              <button id="tab-notifications" class="tab-button w-full text-left px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors" data-tab="notifications">
+                Notificações
+              </button>
+            </li>
+            <li>
+              <button id="tab-preferences" class="tab-button w-full text-left px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors" data-tab="preferences">
+                Preferências
+              </button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Conteúdo Principal -->
+      <div class="lg:col-span-2">
+        <!-- Dados Pessoais -->
+        <div id="personal-tab" class="settings-section tab-content">
+          <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Dados Pessoais</h2>
+            
+            <form id="personal-form" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="firstName" class="block text-sm font-medium text-text-main dark:text-white mb-2">Nome</label>
+                  <input type="text" id="firstName" name="firstName" 
+                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                </div>
+                <div>
+                  <label for="lastName" class="block text-sm font-medium text-text-main dark:text-white mb-2">Sobrenome</label>
+                  <input type="text" id="lastName" name="lastName" 
+                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                </div>
+              </div>
+              
+              <div>
+                <label for="email" class="block text-sm font-medium text-text-main dark:text-white mb-2">E-mail</label>
+                <input type="email" id="email" name="email" 
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+              </div>
+              
+              <div>
+                <label for="phone" class="block text-sm font-medium text-text-main dark:text-white mb-2">Telefone</label>
+                <input type="tel" id="phone" name="phone" 
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Segurança e Senha -->
+        <div id="password-tab" class="settings-section tab-content hidden">
+          <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Segurança e Senha</h2>
+            
+            <form id="password-form" class="space-y-6">
+              <div>
+                <label for="currentPassword" class="block text-sm font-medium text-text-main dark:text-white mb-2">Senha Atual</label>
+                <input type="password" id="currentPassword" name="currentPassword" 
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label for="newPassword" class="block text-sm font-medium text-text-main dark:text-white mb-2">Nova Senha</label>
+                  <input type="password" id="newPassword" name="newPassword" 
+                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                </div>
+                <div>
+                  <label for="confirmPassword" class="block text-sm font-medium text-text-main dark:text-white mb-2">Confirmar Nova Senha</label>
+                  <input type="password" id="confirmPassword" name="confirmPassword" 
+                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                </div>
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                  Alterar Senha
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Notificações -->
+        <div id="notifications-tab" class="settings-section tab-content hidden">
+          <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Preferências de Notificação</h2>
+            
+            <form id="notifications-form" class="space-y-6">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-medium text-text-main dark:text-white">Notificações por E-mail</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">Receba atualizações sobre suas mentorias por e-mail</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="emailNotifications" name="emailNotifications" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-medium text-text-main dark:text-white">Lembretes de Sessão</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">Receba lembretes antes das suas sessões de mentoria</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="sessionReminders" name="sessionReminders" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-medium text-text-main dark:text-white">Novos Mentores</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">Notificações quando novos mentores estiverem disponíveis</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="newMentors" name="newMentors" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                  Salvar Preferências
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Preferências -->
+        <div id="preferences-tab" class="settings-section tab-content hidden">
+          <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Preferências Pessoais</h2>
+            
+            <form id="preferences-form" class="space-y-6">
+              <div>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Mentores Favoritos</label>
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
+                    <span class="text-text-main dark:text-white">João Silva - Desenvolvimento Front-end</span>
+                    <button type="button" class="text-red-500 hover:text-red-700">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                  <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
+                    <span class="text-text-main dark:text-white">Maria Santos - UX/UI Design</span>
+                    <button type="button" class="text-red-500 hover:text-red-700">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </div>
+                <button type="button" class="mt-3 text-primary hover:text-orange-600 font-medium">
+                  + Adicionar Mentor Favorito
+                </button>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Temas de Interesse</label>
+                <div class="flex flex-wrap gap-2">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                    Front-end
+                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </span>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                    UX Design
+                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </span>
+                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
+                    Carreira
+                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
+                      <span class="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </span>
+                </div>
+                <button type="button" class="mt-3 text-primary hover:text-orange-600 font-medium">
+                  + Adicionar Tema de Interesse
+                </button>
+              </div>
+              
+              <div class="flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                  Salvar Preferências
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/auth.js"></script>
+  <script>
+    class ConfigPage {
+      constructor() {
+        this.authService = authService;
+        this.currentUser = null;
+        this.currentTab = 'personal';
+        this.init();
+      }
+
+      async init() {
+        try {
+          console.log('🚀 Iniciando página de configurações...');
+          this.showLoading(true);
+
+          // Verificar autenticação
+          const isAuthenticated = await this.checkAuth();
+
+          if (!isAuthenticated) {
+            console.log('❌ Não autenticado, redirecionando...');
+            this.redirectToLogin();
+            return;
+          }
+
+          // Carregar dados do usuário
+          await this.loadUserData();
+          this.setupTabNavigation();
+          this.setupEventListeners();
+          this.setupFormHandlers();
+
+          this.showLoading(false);
+          this.showContent(true);
+          console.log('✅ Página de configurações carregada com sucesso!');
+
+        } catch (error) {
+          console.error('💥 Erro na página de configurações:', error);
+          this.showError('Erro ao carregar configurações');
+        }
+      }
+
+      async checkAuth() {
+        console.log('🔐 Verificando autenticação...');
+
+        const token = localStorage.getItem('fin_token');
+        if (!token) {
+          console.log('❌ Nenhum token encontrado no localStorage');
+          return false;
+        }
+
+        try {
+          const profile = await this.authService.getProfile();
+          console.log('📊 Resposta do profile:', profile);
+
+          if (profile.success) {
+            this.currentUser = profile.data.user;
+            console.log('✅ Usuário autenticado:', this.currentUser.email);
+            return true;
+          } else {
+            console.log('❌ Profile falhou:', profile.message);
+            return false;
+          }
+        } catch (error) {
+          console.error('💥 Erro ao verificar auth:', error);
+          return false;
+        }
+      }
+
+      async loadUserData() {
+        if (this.currentUser) {
+          // Preencher formulário de dados pessoais
+          document.getElementById('firstName').value = this.currentUser.firstName || '';
+          document.getElementById('lastName').value = this.currentUser.lastName || '';
+          document.getElementById('email').value = this.currentUser.email || '';
+          document.getElementById('phone').value = this.currentUser.phone || '';
+
+          // Atualizar UI
+          const userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+          const userInitials = this.currentUser.firstName[0] + (this.currentUser.lastName?.[0] || '');
+
+          document.getElementById('user-name').textContent = userName;
+          document.getElementById('user-avatar').textContent = userInitials;
+
+          console.log('✅ Dados do usuário carregados:', userName);
+        }
+      }
+
+      setupTabNavigation() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        
+        tabButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            this.switchTab(tabId);
+          });
+        });
+      }
+
+      switchTab(tabId) {
+        // Atualizar botões ativos
+        document.querySelectorAll('.tab-button').forEach(btn => {
+          btn.classList.remove('bg-primary/10', 'text-primary');
+          btn.classList.add('text-text-main', 'dark:text-white', 'hover:bg-slate-100', 'dark:hover:bg-[#444444]');
+        });
+
+        const activeButton = document.getElementById(`tab-${tabId}`);
+        activeButton.classList.add('bg-primary/10', 'text-primary');
+        activeButton.classList.remove('text-text-main', 'dark:text-white', 'hover:bg-slate-100', 'dark:hover:bg-[#444444]');
+
+        // Mostrar conteúdo da aba ativa
+        document.querySelectorAll('.tab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+
+        document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+
+        this.currentTab = tabId;
+      }
+
+      setupFormHandlers() {
+        // Formulário de dados pessoais
+        document.getElementById('personal-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.updatePersonalData();
+        });
+
+        // Formulário de senha
+        document.getElementById('password-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.updatePassword();
+        });
+
+        // Formulário de notificações
+        document.getElementById('notifications-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.updateNotifications();
+        });
+
+        // Formulário de preferências
+        document.getElementById('preferences-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          this.updatePreferences();
+        });
+      }
+
+      async updatePersonalData() {
+        const formData = {
+          firstName: document.getElementById('firstName').value,
+          lastName: document.getElementById('lastName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value
+        };
+
+        try {
+          // Simular atualização
+          console.log('📝 Atualizando dados pessoais:', formData);
+          this.showToast('Dados pessoais atualizados com sucesso!', 'success');
+        } catch (error) {
+          console.error('Erro ao atualizar dados:', error);
+          this.showToast('Erro ao atualizar dados', 'error');
+        }
+      }
+
+      async updatePassword() {
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword !== confirmPassword) {
+          this.showToast('As senhas não coincidem', 'error');
+          return;
+        }
+
+        try {
+          // Simular atualização de senha
+          console.log('🔐 Atualizando senha...');
+          this.showToast('Senha alterada com sucesso!', 'success');
+          
+          // Limpar formulário
+          document.getElementById('password-form').reset();
+        } catch (error) {
+          console.error('Erro ao alterar senha:', error);
+          this.showToast('Erro ao alterar senha', 'error');
+        }
+      }
+
+      async updateNotifications() {
+        const formData = {
+          emailNotifications: document.getElementById('emailNotifications').checked,
+          sessionReminders: document.getElementById('sessionReminders').checked,
+          newMentors: document.getElementById('newMentors').checked
+        };
+
+        try {
+          console.log('🔔 Atualizando preferências de notificação:', formData);
+          this.showToast('Preferências de notificação atualizadas!', 'success');
+        } catch (error) {
+          console.error('Erro ao atualizar notificações:', error);
+          this.showToast('Erro ao atualizar notificações', 'error');
+        }
+      }
+
+      async updatePreferences() {
+        // Simular atualização de preferências
+        console.log('⭐ Atualizando preferências...');
+        this.showToast('Preferências atualizadas com sucesso!', 'success');
+      }
+
+      showToast(message, type = 'info') {
+        // Implementação simples de toast notification
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+          type === 'success' ? 'bg-success text-white' : 
+          type === 'error' ? 'bg-red-500 text-white' : 
+          'bg-primary text-white'
+        }`;
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 3000);
+      }
+
+      setupEventListeners() {
+        document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
+        document.getElementById('logout-btn').addEventListener('click', () => this.authService.logout());
+      }
+
+      showLoading(show) {
+        const loadingElement = document.getElementById('loading-state');
+        const contentElement = document.getElementById('config-content');
+
+        if (loadingElement) loadingElement.style.display = show ? 'flex' : 'none';
+        if (contentElement) contentElement.style.display = show ? 'none' : 'block';
+      }
+
+      showContent(show) {
+        const contentElement = document.getElementById('config-content');
+        if (contentElement) contentElement.style.display = show ? 'block' : 'none';
+      }
+
+      redirectToLogin() {
+        console.log('🔄 Redirecionando para login...');
+        setTimeout(() => {
+          window.location.href = '../pages/login';
+        }, 1000);
+      }
+
+      toggleTheme() {
+        const html = document.documentElement;
+        if (html.classList.contains('dark')) {
+          html.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          html.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      }
+    }
+
+    // Inicialização quando DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+      new ConfigPage();
+    });
+
+    // Tema inicial
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  </script>
+</body>
+
+</html>

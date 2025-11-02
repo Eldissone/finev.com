@@ -1,0 +1,1 @@
+export function formatCurrency(v){return new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR'}).format(v)}

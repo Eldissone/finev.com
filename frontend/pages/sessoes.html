@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+<link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Manrope%3Awght%40400%3B500%3B700%3B800&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1193d4",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<title>FIN Mentorship</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<div class="flex flex-col min-h-screen">
+<header class="sticky top-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+<div class="flex items-center p-4">
+<button class="p-2 -ml-2">
+<span class="material-symbols-outlined text-slate-900 dark:text-white">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center text-lg font-bold text-slate-900 dark:text-white pr-8">FIN</h1>
+</div>
+<nav class="border-b border-slate-200 dark:border-slate-700">
+<div class="flex px-4 gap-4">
+<a class="py-3 text-sm font-bold border-b-2 border-primary text-primary" href="#">Sessions</a>
+<a class="py-3 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-primary hover:border-primary/50 transition-colors" href="#">Materials</a>
+<a class="py-3 text-sm font-semibold text-slate-500 dark:text-slate-400 border-b-2 border-transparent hover:text-primary hover:border-primary/50 transition-colors" href="#">Live</a>
+</div>
+</nav>
+</header>
+<main class="flex-grow">
+<div class="space-y-6 p-4">
+<section id="sessions">
+<h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">Sessions</h2>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-primary">Free</span>
+<h3 class="font-bold text-slate-900 dark:text-white mt-1">Mastering Personal Finance</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">Learn the basics of budgeting, saving, and investing for a secure financial future.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAY_aF8P2GcF6SuWUy4OlWtNnmG-HScGlzldeZWR8qam-9_ps6NFTtqJZV63WjTZMR0XXFZoMx_e5yK727qclTLlJ6t8p0SlftHp9EBfAVxCAypvo0xHRcfCn3IJydqLVW6tioAWvONj1Su9AIFZX8vl5Ex61bv1H1Ck6h_XK5Uik4KLvg7fHPZIKoqVimMJVQulpyJ05ENjXfSqgsRKzmLmjq4OxuiYWbQ1jsi6N9TvAn5ffWv28B4zoHYh4zMBTXBF53HpM4P2qw');"></div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-amber-500">Premium</span>
+<h3 class="font-bold text-slate-900 dark:text-white mt-1">Advanced Investment Strategies</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">Dive deeper into investment options, risk management, and portfolio diversification.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqoCs8jFGdUmzej6vFIQQ-uU6Z9Q9vlpQOeiIpQn0DlArI8lcHpNSEgz95xJpj5jEk3i9JN4bEIe0vOedUnn1DmZJ_HeYgtQ5H5RB_KkQ9cRJeYeWqYjFbOj1qIsOBy1H_HCVEfJwI3H6OiRDAkn8h68dyaMslepJczfdh3trBFsyuy7jdWE5pqfLt38JegecnmJ1bstX2MI1HVzrFpHy-f2wqBY6y-YN6rySEUsQAjIVSDNljEEoUX1NGpUyM50d5RWOJQ-fdziw');"></div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-amber-500">Premium</span>
+<h3 class="font-bold text-slate-900 dark:text-white mt-1">Real Estate Investing 101</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">Explore the world of real estate investing, from property selection to financing.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAF8p6hUaVmtKr6cJvlfWLSeGGopksmpqnbKLtgDpFcj70vBkRIsWWcMjfG6M0tp3YOWQ_il2trq0A66lsFNjHrrfx2mvq9waZou1Dg2IpJHcBOB6CaMAAUWp1OaFatg1QbxxQkXC8TaIYf8lzzSC6BNbr15On47fEocUktljU2Dv7bNoJZn9KLfI7qvOkdy6wlIbjhzu2Pmr23MUA_sJVPdCI_GFTJSSOqhhQSNecvnrN6PY09lpzDNkDKDbrF6yClT1JgaDAMjCA');"></div>
+</div>
+</div>
+</section>
+<section id="materials">
+<h2 class="text-xl font-bold mb-4 pt-4 text-slate-900 dark:text-white">Materials</h2>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-primary">Free</span>
+<h3 class="font-bold text-slate-900 dark:text-white mt-1">Budgeting Template</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">Download our easy-to-use budgeting template to track your income and expenses.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0 flex items-center justify-center bg-slate-200 dark:bg-slate-800">
+<span class="material-symbols-outlined text-4xl text-slate-500 dark:text-slate-400">picture_as_pdf</span>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<span class="text-xs font-semibold uppercase tracking-wider text-amber-500">Premium</span>
+<h3 class="font-bold text-slate-900 dark:text-white mt-1">Investment Guide</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">A comprehensive guide to different investment types, with tips for beginners.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0 flex items-center justify-center bg-slate-200 dark:bg-slate-800">
+<span class="material-symbols-outlined text-4xl text-slate-500 dark:text-slate-400">picture_as_pdf</span>
+</div>
+</div>
+</div>
+</section>
+<section id="live">
+<h2 class="text-xl font-bold mb-4 pt-4 text-slate-900 dark:text-white">Live</h2>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 rounded-lg bg-white/5 dark:bg-black/10">
+<div class="flex-1">
+<h3 class="font-bold text-slate-900 dark:text-white">Weekly Q&amp;A Session</h3>
+<p class="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">Join our live Q&amp;A every Wednesday at 6 PM EST to get your finance questions answered.</p>
+</div>
+<div class="w-24 h-24 rounded-lg bg-cover bg-center shrink-0" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDoZSYNXSjdD37TahxMikYEM7tWEcr5G1F4JiJsxX5Pe-ifapU7JOHpBkCeDBA70MRNQuLwFTg-QAlp9vvP63hWrIGPrzPqRS7pofpvRUvw6Pr3UiyC2c7Y4dOaPp48WteXxbb0YEXDlfJhFQs2T9KWalQRCe804WPjirHoacACk5YPFX1h6-SzBHcnOKEOExhcREQCqq8G7gpXIiHz__qhD31r96LUPn16EdCeMyjHZeUbB3U07cN2-nveCG7InmQ5Rkd878CKLoU');"></div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<footer class="sticky bottom-0 border-t border-slate-200 dark:border-slate-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm pb-safe">
+<nav class="flex justify-around items-center h-16">
+<a class="flex flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-xs font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="text-xs font-medium">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-xs font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-xs font-medium">Profile</span>
+</a>
+</nav>
+</footer>
+</div>
+
+</body></html>
