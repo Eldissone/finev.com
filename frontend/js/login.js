@@ -1,4 +1,4 @@
-// login.js - Versão corrigida
+// login.js - VERSÃO CORRIGIDA
 document.addEventListener('DOMContentLoaded', function() {
   console.log('✅ Login.js carregado');
   
@@ -12,6 +12,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
   console.log('✅ Formulário de login encontrado');
 
+  // Verificar se o authService está disponível
+  if (typeof authService === 'undefined') {
+    console.error('❌ authService não está disponível!');
+    showError('Erro ao carregar o sistema de autenticação. Recarregue a página.');
+    return;
+  }
+
+  console.log('✅ authService disponível:', typeof authService.redirectBasedOnRole);
+
+  // Verificar se já está autenticado
+  checkExistingAuth();
+
   // Configurar toggle de senha
   const togglePassword = document.getElementById('toggle-password');
   if (togglePassword) {
@@ -22,11 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         icon.textContent = 'visibility_off';
-        console.log('👁️ Senha visível');
       } else {
         passwordInput.type = 'password';
         icon.textContent = 'visibility';
-        console.log('👁️ Senha oculta');
       }
     });
   }
@@ -41,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
       password: document.getElementById('password').value
     };
     
-    console.log('📋 Dados do login:', { email: formData.email, passwordLength: formData.password.length });
+    console.log('📋 Dados do login:', formData);
     
     if (!formData.email || !formData.password) {
       showError('Por favor, preencha todos os campos.');
@@ -50,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<span>Entrando...</span><span class="material-symbols-outlined ml-2 pulse-animation">autorenew</span>';
+    submitBtn.innerHTML = '<span>Entrando...</span><span class="material-symbols-outlined ml-2">autorenew</span>';
     submitBtn.disabled = true;
     
     try {
@@ -61,18 +71,22 @@ document.addEventListener('DOMContentLoaded', function() {
       if (result.success) {
         showSuccess('Login realizado com sucesso! Redirecionando...');
         console.log('✅ Login bem-sucedido!');
-        console.log('🔑 Token salvo:', localStorage.getItem('fin_token') ? 'SIM' : 'NÃO');
-        console.log('👤 User salvo:', localStorage.getItem('fin_user') ? 'SIM' : 'NÃO');
         
-        // Teste imediato do profile
-        authService.getProfile()
-          .then(profile => {
-            console.log('📊 Teste pós-login:', profile);
-          });
-        
+        // Fallback caso o redirecionamento falhe
         setTimeout(() => {
-          window.location.href = '../dashboard/';
-        }, 1500);
+          if (window.location.href.includes('login.html')) {
+            console.log('🚨 Redirecionamento automático falhou - tentando manualmente');
+            const user = authService.getCurrentUser();
+            if (user) {
+              if (user.role === 'admin') {
+                window.location.href = '../admin/index.html';
+              } else {
+                window.location.href = '/dashboard';
+              }
+            }
+          }
+        }, 2000);
+        
       } else {
         showError(result.message || 'Email ou senha incorretos.');
       }
@@ -85,8 +99,34 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // ✅ VERIFICAR SE JÁ ESTÁ AUTENTICADO
+  async function checkExistingAuth() {
+    try {
+      const token = localStorage.getItem('fin_token');
+      
+      if (token && authService.isValidToken(token)) {
+        console.log('🔐 Usuário já autenticado, verificando perfil...');
+        
+        const profile = await authService.getProfile();
+        if (profile.success) {
+          console.log('✅ Usuário autenticado, redirecionando...');
+          
+          // Usar redirecionamento direto para evitar problemas
+          const user = profile.data.user;
+          if (user.role === 'admin' || user.role === 'administrator') {
+            window.location.href = '../admin/index.html';
+          } else {
+            window.location.href = '../dashboard/';
+          }
+        }
+      }
+    } catch (error) {
+      console.log('❌ Erro ao verificar autenticação existente:', error);
+    }
+  }
+
   function showError(message) {
-    console.error('❌ Erro no formulário:', message);
+    console.error('❌ Erro:', message);
     errorDiv.textContent = message;
     errorDiv.classList.remove('hidden');
     errorDiv.classList.remove('bg-green-100', 'text-green-700', 'dark:bg-green-900/30', 'dark:text-green-400');

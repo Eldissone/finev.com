@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FIN - Painel Administrativo</title>
+    <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FF7A00",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#1A1A1A",
+                        "text-main": "#333333",
+                        "success": "#2ECC71",
+                        "warning": "#F39C12",
+                        "danger": "#E74C3C",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope"]
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .admin-nav-item {
+            transition: all 0.3s ease;
+        }
+
+        .admin-nav-item.active {
+            background-color: rgba(255, 122, 0, 0.1);
+            border-right: 3px solid #FF7A00;
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar personalizada */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #FF7A00;
+            border-radius: 10px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #333333;
+        }
+    </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display">
+    <!-- Header Admin -->
+    <header
+        class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="../index.html" class="text-2xl font-extrabold text-primary">FIN</a>
+                    <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Admin</span>
+                    <span id="admin-badge"
+                        class="ml-3 px-2 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full hidden">Administrador</span>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="../index.html"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Início</a>
+                    <a href="../dashboard"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Dashboard</a>
+                    <a href="./index.html"
+                        class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Admin</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle"
+                        class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+                        <span class="material-symbols-outlined text-lg">dark_mode</span>
+                    </button>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
+                            id="user-avatar">A</div>
+                        <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
+                            id="user-name">Admin</span>
+                    </div>
+                    <button id="logout-btn"
+                        class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loading-state"
+        class="fixed inset-0 bg-white dark:bg-background-dark flex items-center justify-center z-50">
+        <div class="text-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p class="mt-4 text-text-main dark:text-white">Carregando painel administrativo...</p>
+        </div>
+    </div>
+
+    <!-- Access Denied -->
+    <div id="access-denied" class="hidden container mx-auto px-6 py-16 text-center">
+        <div class="max-w-md mx-auto">
+            <span class="material-symbols-outlined text-6xl text-danger mb-4">block</span>
+            <h2 class="text-2xl font-bold text-text-main dark:text-white mb-4">Acesso Negado</h2>
+            <p class="text-slate-600 dark:text-slate-300 mb-6">Você não tem permissão para acessar o painel
+                administrativo.</p>
+            <a href="../dashboard"
+                class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+
+    <main id="admin-content" class="hidden">
+        <div class="container mx-auto px-6 py-8">
+            <!-- Breadcrumb -->
+            <div class="mb-6">
+                <nav class="flex" aria-label="Breadcrumb">
+                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                        <li class="inline-flex items-center">
+                            <a href="../dashboard"
+                                class="inline-flex items-center text-sm font-medium text-text-main dark:text-white hover:text-primary">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li aria-current="page">
+                            <div class="flex items-center">
+                                <span class="mx-2 text-text-main dark:text-white">/</span>
+                                <span class="ml-1 text-sm font-medium text-primary md:ml-2">Painel Administrativo</span>
+                            </div>
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-8">
+                <!-- Sidebar Navigation -->
+                <div class="lg:w-64 flex-shrink-0">
+                    <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm sticky top-24">
+                        <h3 class="text-lg font-semibold text-text-main dark:text-white mb-4">Administração</h3>
+                        <nav class="space-y-2">
+                            <a href="#overview"
+                                class="admin-nav-item active block px-4 py-2 rounded-lg text-primary font-medium transition-colors"
+                                data-section="overview">
+                                <span class="material-symbols-outlined align-middle mr-3 text-sm">dashboard</span>Visão
+                                Geral
+                            </a>
+                            <a href="#usuarios"
+                                class="admin-nav-item block px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors"
+                                data-section="usuarios">
+                                <span class="material-symbols-outlined align-middle mr-3 text-sm">group</span>Gerir
+                                Usuários
+                            </a>
+                            <a href="#mentores"
+                                class="admin-nav-item block px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors"
+                                data-section="mentores">
+                                <span class="material-symbols-outlined align-middle mr-3 text-sm">school</span>Gerir
+                                Mentores
+                            </a>
+                            <a href="#mentorias"
+                                class="admin-nav-item block px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors"
+                                data-section="mentorias">
+                                <span class="material-symbols-outlined align-middle mr-3 text-sm">handshake</span>Gerir
+                                Mentorias
+                            </a>
+                            <a href="#conteudos"
+                                class="admin-nav-item block px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors"
+                                data-section="conteudos">
+                                <span class="material-symbols-outlined align-middle mr-3 text-sm">article</span>Gerir
+                                Conteúdo
+                            </a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1">
+                    <!-- Visão Geral -->
+                    <section id="overview-section" class="admin-section fade-in">
+                        <h1 class="text-3xl font-bold text-text-main dark:text-white mb-2">Painel Administrativo</h1>
+                        <p class="text-slate-600 dark:text-slate-300 mb-8">Gerencie usuários, mentorias e conteúdo da
+                            plataforma</p>
+
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="stat-card bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                                        <span
+                                            class="material-symbols-outlined text-blue-600 dark:text-blue-400">group</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Total Usuários
+                                        </p>
+                                        <p class="text-2xl font-bold text-text-main dark:text-white" id="total-users">0
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                                        <span
+                                            class="material-symbols-outlined text-green-600 dark:text-green-400">school</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Mentores
+                                            Ativos</p>
+                                        <p class="text-2xl font-bold text-text-main dark:text-white"
+                                            id="active-mentors">0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                                        <span
+                                            class="material-symbols-outlined text-purple-600 dark:text-purple-400">handshake</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Mentorias
+                                            Ativas</p>
+                                        <p class="text-2xl font-bold text-text-main dark:text-white"
+                                            id="active-mentorships">0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+                                        <span
+                                            class="material-symbols-outlined text-orange-600 dark:text-orange-400">trending_up</span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-slate-600 dark:text-slate-300">Taxa de
+                                            Conclusão</p>
+                                        <p class="text-2xl font-bold text-text-main dark:text-white"
+                                            id="completion-rate">0%</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-4">Atividade Recente</h3>
+                            <div id="recent-activity" class="space-y-4 max-h-96 overflow-y-auto custom-scrollbar">
+                                <div class="text-center py-8 text-slate-500">
+                                    <span class="material-symbols-outlined text-4xl mb-2">pending</span>
+                                    <p>Carregando atividades...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Gerir Usuários -->
+                    <section id="usuarios-section" class="admin-section hidden fade-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-text-main dark:text-white">Gerir Usuários</h2>
+                            <button onclick="adminPanel.openUserModal()"
+                                class="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors flex items-center">
+                                <span class="material-symbols-outlined mr-2 text-sm">add</span>Novo Usuário
+                            </button>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#333333] rounded-lg shadow-sm">
+                            <div class="p-4 border-b border-slate-200 dark:border-slate-600">
+                                <div
+                                    class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                                    <div class="flex-1">
+                                        <div class="relative">
+                                            <span
+                                                class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">search</span>
+                                            <input type="text" id="user-search" placeholder="Buscar usuários..."
+                                                class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-4">
+                                        <select id="user-status-filter"
+                                            class="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                            <option value="">Todos os Status</option>
+                                            <option value="active">Ativo</option>
+                                            <option value="inactive">Inativo</option>
+                                            <option value="suspended">Suspenso</option>
+                                        </select>
+                                        <select id="user-role-filter"
+                                            class="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                            <option value="">Todos os Tipos</option>
+                                            <option value="mentee">Mentorado</option>
+                                            <option value="mentor">Mentor</option>
+                                            <option value="admin">Admin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-slate-600">
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Usuário</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                E-mail</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Tipo</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Status</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Data Registo</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                        <tr>
+                                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                                <span class="material-symbols-outlined text-4xl mb-2">pending</span>
+                                                <p>Carregando usuários...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div
+                                class="p-4 border-t border-slate-200 dark:border-slate-600 flex justify-between items-center">
+                                <div class="text-sm text-slate-600 dark:text-slate-300">
+                                    Mostrando <span id="users-count">0</span> de <span id="users-total">0</span>
+                                    usuários
+                                </div>
+                                <div class="flex space-x-2" id="users-pagination"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Outras seções serão implementadas seguindo o mesmo padrão -->
+                    <section id="mentores-section" class="admin-section hidden fade-in">
+                        <div class="text-center py-12">
+                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">school</span>
+                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Mentores</h3>
+                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        </div>
+                    </section>
+
+                    <section id="mentorias-section" class="admin-section hidden fade-in">
+                        <div class="text-center py-12">
+                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">handshake</span>
+                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Mentorias</h3>
+                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        </div>
+                    </section>
+
+                    <section id="conteudos-section" class="admin-section hidden fade-in">
+                        <div class="text-center py-12">
+                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">article</span>
+                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Conteúdo</h3>
+                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Usuário -->
+    <div id="user-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-[#333333] rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold text-text-main dark:text-white mb-4" id="user-modal-title">Novo Usuário</h3>
+            <form id="user-form" class="space-y-4">
+                <input type="hidden" id="user-id">
+                <div>
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Nome</label>
+                    <input type="text" id="user-firstName"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Sobrenome</label>
+                    <input type="text" id="user-lastName"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">E-mail</label>
+                    <input type="email" id="user-email"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        required>
+                </div>
+                <div id="password-fields">
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Senha</label>
+                    <input type="password" id="user-password"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <p class="text-xs text-slate-500 mt-1">Deixe em branco para manter a senha atual</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Tipo</label>
+                    <select id="user-role"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="mentee">Mentorado</option>
+                        <option value="mentor">Mentor</option>
+                        <option value="admin">Administrador</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Status</label>
+                    <select id="user-status"
+                        class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                        <option value="active">Ativo</option>
+                        <option value="inactive">Inativo</option>
+                        <option value="suspended">Suspenso</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="adminPanel.closeUserModal()"
+                        class="px-4 py-2 text-text-main dark:text-white font-medium rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-[#444444] transition-colors">Cancelar</button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class AdminPanel {
+            constructor() {
+                this.api = finAPI;
+                this.auth = authService;
+                this.currentUser = null;
+                this.currentSection = 'overview';
+                this.users = [];
+                this.filters = {
+                    users: {
+                        search: '',
+                        status: '',
+                        role: '',
+                        page: 1,
+                        limit: 10
+                    }
+                };
+                this.debounceTimer = null;
+            }
+
+            async init() {
+                try {
+                    console.log('🚀 Iniciando painel administrativo...');
+                    this.showLoading(true);
+                    
+                    // Verificar autenticação primeiro
+                    const token = localStorage.getItem('fin_token');
+                    if (!token) {
+                        console.log('❌ Nenhum token encontrado, redirecionando para login');
+                        window.location.href = '../pages/login.html';
+                        return;
+                    }
+
+                    // Verificar se é admin
+                    const userData = this.auth.getCurrentUser();
+                    if (!userData) {
+                        console.log('❌ Dados do usuário não encontrados');
+                        window.location.href = '../pages/login.html';
+                        return;
+                    }
+
+                    const isAdmin = userData.role === 'admin' || userData.role === 'administrator';
+                    if (!isAdmin) {
+                        console.log('❌ Usuário não é admin, redirecionando para dashboard');
+                        window.location.href = '../dashboard';
+                        return;
+                    }
+
+                    this.currentUser = userData;
+                    console.log('✅ Usuário admin autenticado:', this.currentUser);
+
+                    // Configurar interface
+                    await this.loadAdminData();
+                    this.setupNavigation();
+                    this.setupEventListeners();
+                    await this.loadOverviewData();
+
+                    this.showLoading(false);
+                    this.showContent(true);
+                    console.log('✅ Painel administrativo carregado com sucesso');
+
+                } catch (error) {
+                    console.error('❌ Erro no painel administrativo:', error);
+                    this.showError('Erro ao carregar painel administrativo');
+                    this.showLoading(false);
+                }
+            }
+
+            async loadAdminData() {
+                if (this.currentUser) {
+                    const userName = `${this.currentUser.firstName || ''} ${this.currentUser.lastName || ''}`.trim() || 'Administrador';
+                    const userInitials = ((this.currentUser.firstName?.[0] || '') + (this.currentUser.lastName?.[0] || '')).toUpperCase() || 'A';
+
+                    document.getElementById('user-name').textContent = userName;
+                    document.getElementById('user-avatar').textContent = userInitials;
+                    document.getElementById('admin-badge').classList.remove('hidden');
+                }
+            }
+
+            async loadOverviewData() {
+                try {
+                    console.log('📊 Carregando dados da visão geral...');
+                    
+                    // Dados mock para demonstração
+                    const mockStats = {
+                        totalUsers: 150,
+                        activeMentors: 25,
+                        activeMentorships: 89,
+                        completionRate: '78%'
+                    };
+                    
+                    this.updateStats(mockStats);
+                    await this.loadRecentActivity();
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao carregar dados:', error);
+                    // Fallback para dados mock
+                    this.updateStats({
+                        totalUsers: 0,
+                        activeMentors: 0,
+                        activeMentorships: 0,
+                        completionRate: '0%'
+                    });
+                }
+            }
+
+            updateStats(stats) {
+                document.getElementById('total-users').textContent = stats.totalUsers?.toLocaleString() || '0';
+                document.getElementById('active-mentors').textContent = stats.activeMentors?.toLocaleString() || '0';
+                document.getElementById('active-mentorships').textContent = stats.activeMentorships?.toLocaleString() || '0';
+                document.getElementById('completion-rate').textContent = stats.completionRate || '0%';
+            }
+
+            async loadRecentActivity() {
+                try {
+                    console.log('📝 Carregando atividades recentes...');
+                    
+                    // Simular atividade recente
+                    const activities = [
+                        {
+                            type: 'user_registered',
+                            user: 'João Silva',
+                            time: 'Há 2 minutos',
+                            avatar: 'JS'
+                        },
+                        {
+                            type: 'mentor_promoted',
+                            user: 'Maria Santos',
+                            time: 'Há 15 minutos',
+                            avatar: 'MS'
+                        },
+                        {
+                            type: 'mentorship_created',
+                            user: 'Pedro Costa',
+                            time: 'Há 1 hora',
+                            avatar: 'PC'
+                        }
+                    ];
+
+                    const container = document.getElementById('recent-activity');
+                    container.innerHTML = activities.map(activity => `
+                        <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                                    ${activity.avatar}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-text-main dark:text-white">${activity.user} ${this.getActivityText(activity.type)}</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-300">${activity.time}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded-full">
+                                ${this.getActivityBadge(activity.type)}
+                            </span>
+                        </div>
+                    `).join('');
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao carregar atividades:', error);
+                }
+            }
+
+            getActivityText(type) {
+                const texts = {
+                    'user_registered': 'se registrou',
+                    'mentor_promoted': 'foi promovido(a) a mentor(a)',
+                    'mentorship_created': 'iniciou uma mentoria'
+                };
+                return texts[type] || 'realizou uma ação';
+            }
+
+            getActivityBadge(type) {
+                const badges = {
+                    'user_registered': 'Novo',
+                    'mentor_promoted': 'Promoção',
+                    'mentorship_created': 'Nova'
+                };
+                return badges[type] || 'Info';
+            }
+
+            async loadUsers() {
+                try {
+                    console.log('👥 Carregando usuários...');
+                    
+                    // Simular dados de usuários
+                    const mockUsers = [
+                        {
+                            id: '1',
+                            firstName: 'João',
+                            lastName: 'Silva',
+                            email: 'joao@email.com',
+                            role: 'mentee',
+                            status: 'active',
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: '2',
+                            firstName: 'Maria',
+                            lastName: 'Santos',
+                            email: 'maria@email.com',
+                            role: 'mentor',
+                            status: 'active',
+                            createdAt: new Date().toISOString()
+                        },
+                        {
+                            id: '3',
+                            firstName: 'Admin',
+                            lastName: 'Sistema',
+                            email: 'admin@email.com',
+                            role: 'admin',
+                            status: 'active',
+                            createdAt: new Date().toISOString()
+                        }
+                    ];
+
+                    this.users = mockUsers;
+                    this.renderUsersTable();
+                    this.updateUsersPagination({ total: mockUsers.length });
+                    
+                } catch (error) {
+                    console.error('❌ Erro ao carregar usuários:', error);
+                    this.showToast('Erro ao carregar usuários', 'error');
+                }
+            }
+
+            renderUsersTable() {
+                const tbody = document.getElementById('users-table-body');
+
+                if (!this.users || this.users.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+                                <p>Nenhum usuário encontrado</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.users.map(user => `
+                    <tr class="border-b border-slate-200 dark:border-slate-600">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                                    ${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-text-main dark:text-white">${user.firstName} ${user.lastName}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">${user.email}</td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 ${this.getRoleBadgeClass(user.role)} text-xs rounded-full">
+                                ${this.getRoleText(user.role)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 ${this.getStatusBadgeClass(user.status)} text-xs rounded-full">
+                                ${this.getStatusText(user.status)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">
+                            ${user.createdAt ? new Date(user.createdAt).toLocaleDateString('pt-BR') : 'N/A'}
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex space-x-2">
+                                <button onclick="adminPanel.editUser('${user.id}')" class="p-1 text-blue-600 hover:text-blue-800 transition-colors" title="Editar">
+                                    <span class="material-symbols-outlined text-sm">edit</span>
+                                </button>
+                                ${user.role !== 'mentor' ? `
+                                <button onclick="adminPanel.promoteToMentor('${user.id}')" class="p-1 text-green-600 hover:text-green-800 transition-colors" title="Promover a Mentor">
+                                    <span class="material-symbols-outlined text-sm">school</span>
+                                </button>
+                                ` : ''}
+                                <button onclick="adminPanel.toggleUserStatus('${user.id}', '${user.status}')" class="p-1 ${user.status === 'active' ? 'text-red-600 hover:text-red-800' : 'text-green-600 hover:text-green-800'} transition-colors" title="${user.status === 'active' ? 'Suspender' : 'Ativar'}">
+                                    <span class="material-symbols-outlined text-sm">${user.status === 'active' ? 'block' : 'check'}</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            getRoleBadgeClass(role) {
+                const classes = {
+                    'mentee': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                    'mentor': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                    'admin': 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+                };
+                return classes[role] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300';
+            }
+
+            getRoleText(role) {
+                const texts = {
+                    'mentee': 'Mentorado',
+                    'mentor': 'Mentor',
+                    'admin': 'Admin'
+                };
+                return texts[role] || role;
+            }
+
+            getStatusBadgeClass(status) {
+                const classes = {
+                    'active': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                    'inactive': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                    'suspended': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                };
+                return classes[status] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300';
+            }
+
+            getStatusText(status) {
+                const texts = {
+                    'active': 'Ativo',
+                    'inactive': 'Inativo',
+                    'suspended': 'Suspenso'
+                };
+                return texts[status] || status;
+            }
+
+            async promoteToMentor(userId) {
+                if (!confirm('Tem certeza que deseja promover este usuário a mentor?')) return;
+
+                try {
+                    this.showToast('Usuário promovido a mentor com sucesso!', 'success');
+                    await this.loadUsers();
+                    await this.loadOverviewData();
+                } catch (error) {
+                    this.showToast('Erro ao promover usuário', 'error');
+                }
+            }
+
+            async toggleUserStatus(userId, currentStatus) {
+                const newStatus = currentStatus === 'active' ? 'suspended' : 'active';
+                const action = newStatus === 'active' ? 'ativar' : 'suspender';
+
+                if (!confirm(`Tem certeza que deseja ${action} este usuário?`)) return;
+
+                try {
+                    this.showToast(`Usuário ${action === 'ativar' ? 'ativado' : 'suspenso'} com sucesso!`, 'success');
+                    await this.loadUsers();
+                } catch (error) {
+                    this.showToast(`Erro ao ${action} usuário`, 'error');
+                }
+            }
+
+            editUser(userId) {
+                const user = this.users.find(u => u.id === userId);
+                if (user) {
+                    this.openUserModal(user);
+                }
+            }
+
+            openUserModal(user = null) {
+                const modal = document.getElementById('user-modal');
+                const title = document.getElementById('user-modal-title');
+                const form = document.getElementById('user-form');
+                const passwordFields = document.getElementById('password-fields');
+
+                if (user) {
+                    // Editar usuário existente
+                    title.textContent = 'Editar Usuário';
+                    document.getElementById('user-id').value = user.id;
+                    document.getElementById('user-firstName').value = user.firstName || '';
+                    document.getElementById('user-lastName').value = user.lastName || '';
+                    document.getElementById('user-email').value = user.email || '';
+                    document.getElementById('user-role').value = user.role || 'mentee';
+                    document.getElementById('user-status').value = user.status || 'active';
+                    document.getElementById('user-password').value = '';
+                    passwordFields.style.display = 'none';
+                } else {
+                    // Novo usuário
+                    title.textContent = 'Novo Usuário';
+                    form.reset();
+                    document.getElementById('user-id').value = '';
+                    document.getElementById('user-status').value = 'active';
+                    passwordFields.style.display = 'block';
+                    document.getElementById('user-password').required = true;
+                }
+
+                modal.classList.remove('hidden');
+            }
+
+            closeUserModal() {
+                document.getElementById('user-modal').classList.add('hidden');
+            }
+
+            async handleUserSubmit(event) {
+                event.preventDefault();
+
+                const formData = {
+                    firstName: document.getElementById('user-firstName').value,
+                    lastName: document.getElementById('user-lastName').value,
+                    email: document.getElementById('user-email').value,
+                    role: document.getElementById('user-role').value,
+                    status: document.getElementById('user-status').value
+                };
+
+                const userId = document.getElementById('user-id').value;
+                const password = document.getElementById('user-password').value;
+
+                if (password) {
+                    formData.password = password;
+                }
+
+                try {
+                    this.showToast(`Usuário ${userId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+                    this.closeUserModal();
+                    await this.loadUsers();
+                    await this.loadOverviewData();
+                } catch (error) {
+                    this.showToast(`Erro ao ${userId ? 'atualizar' : 'criar'} usuário`, 'error');
+                }
+            }
+
+            updateUsersPagination(pagination) {
+                const countElement = document.getElementById('users-count');
+                const totalElement = document.getElementById('users-total');
+                const paginationElement = document.getElementById('users-pagination');
+
+                if (countElement && totalElement) {
+                    countElement.textContent = this.users.length;
+                    totalElement.textContent = pagination?.total || this.users.length;
+                }
+
+                // Implementar paginação se necessário
+                paginationElement.innerHTML = '';
+            }
+
+            setupNavigation() {
+                const navItems = document.querySelectorAll('.admin-nav-item');
+
+                navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const section = item.getAttribute('data-section');
+                        this.switchSection(section);
+                    });
+                });
+
+                // Carregar dados da seção usuários quando acessada
+                document.querySelector('[data-section="usuarios"]').addEventListener('click', () => {
+                    this.loadUsers();
+                });
+            }
+
+            switchSection(sectionId) {
+                document.querySelectorAll('.admin-nav-item').forEach(item => {
+                    item.classList.remove('active', 'text-primary');
+                    item.classList.add('text-text-main', 'dark:text-white', 'hover:bg-slate-100', 'dark:hover:bg-[#444444]');
+                });
+
+                const activeNav = document.querySelector(`[data-section="${sectionId}"]`);
+                activeNav.classList.add('active', 'text-primary');
+                activeNav.classList.remove('text-text-main', 'dark:text-white', 'hover:bg-slate-100', 'dark:hover:bg-[#444444]');
+
+                document.querySelectorAll('.admin-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                document.getElementById(`${sectionId}-section`).classList.remove('hidden');
+                this.currentSection = sectionId;
+
+                // Atualizar URL
+                window.history.pushState({}, '', `#${sectionId}`);
+            }
+
+            setupEventListeners() {
+                // Tema
+                document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
+                
+                // Logout
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    this.auth.logout();
+                });
+
+                // Filtros de usuários
+                document.getElementById('user-search').addEventListener('input', (e) => {
+                    this.filters.users.search = e.target.value;
+                    this.filters.users.page = 1;
+                    this.debounce(() => this.loadUsers(), 500);
+                });
+
+                document.getElementById('user-status-filter').addEventListener('change', (e) => {
+                    this.filters.users.status = e.target.value;
+                    this.filters.users.page = 1;
+                    this.loadUsers();
+                });
+
+                document.getElementById('user-role-filter').addEventListener('change', (e) => {
+                    this.filters.users.role = e.target.value;
+                    this.filters.users.page = 1;
+                    this.loadUsers();
+                });
+
+                // Formulário de usuário
+                document.getElementById('user-form').addEventListener('submit', (e) => this.handleUserSubmit(e));
+
+                // Fechar modal ao clicar fora
+                document.getElementById('user-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'user-modal') {
+                        this.closeUserModal();
+                    }
+                });
+            }
+
+            debounce(func, wait) {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = setTimeout(func, wait);
+            }
+
+            showToast(message, type = 'info') {
+                // Remover toasts existentes
+                const existingToasts = document.querySelectorAll('.toast-message');
+                existingToasts.forEach(toast => toast.remove());
+
+                const toast = document.createElement('div');
+                toast.className = `toast-message fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${type === 'success' ? 'bg-success text-white' :
+                        type === 'error' ? 'bg-danger text-white' :
+                            'bg-primary text-white'
+                    }`;
+                toast.textContent = message;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            }
+
+            showLoading(show) {
+                const loadingElement = document.getElementById('loading-state');
+                const contentElement = document.getElementById('admin-content');
+                const accessDeniedElement = document.getElementById('access-denied');
+
+                if (loadingElement) loadingElement.style.display = show ? 'flex' : 'none';
+                if (contentElement) contentElement.style.display = show ? 'none' : 'block';
+                if (accessDeniedElement) accessDeniedElement.style.display = 'none';
+            }
+
+            showContent(show) {
+                const contentElement = document.getElementById('admin-content');
+                if (contentElement) contentElement.style.display = show ? 'block' : 'none';
+            }
+
+            showAccessDenied() {
+                this.showLoading(false);
+                document.getElementById('access-denied').classList.remove('hidden');
+            }
+
+            showError(message) {
+                this.showToast(message, 'error');
+            }
+
+            toggleTheme() {
+                const html = document.documentElement;
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            }
+        }
+
+        // Inicialização
+        const adminPanel = new AdminPanel();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🏁 DOM carregado, inicializando painel admin...');
+            adminPanel.init();
+        });
+
+        // Tema inicial
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+
+        // Navegação por hash
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash && document.querySelector(`[data-section="${hash}"]`)) {
+                document.querySelector(`[data-section="${hash}"]`).click();
+            }
+        });
+
+        // Carregar seção do hash na URL ao carregar a página
+        window.addEventListener('load', () => {
+            const hash = window.location.hash.substring(1);
+            if (hash && document.querySelector(`[data-section="${hash}"]`)) {
+                document.querySelector(`[data-section="${hash}"]`).click();
+            }
+        });
+    </script>
+</body>
+
+</html>

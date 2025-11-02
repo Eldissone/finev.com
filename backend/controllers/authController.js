@@ -1,4 +1,4 @@
-// controllers/authController.js - VERSÃO FINAL
+// controllers/authController.js - VERSÃO CORRIGIDA
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
@@ -52,7 +52,11 @@ exports.register = async (req, res) => {
           id: user.id,
           firstName: user.first_name,
           lastName: user.last_name,
-          email: user.email
+          email: user.email,
+          role: user.role, // ✅ CORREÇÃO: INCLUIR ROLE
+          status: user.status,
+          emailVerified: user.email_verified,
+          createdAt: user.created_at
         },
         token
       }
@@ -118,6 +122,7 @@ exports.login = async (req, res) => {
 
     console.log('🎉 Login realizado com sucesso:', email);
     console.log('🔑 Token gerado:', token ? 'SIM' : 'NÃO');
+    console.log('🎯 Role do usuário:', user.role); // ✅ LOG DA ROLE
 
     res.json({
       success: true,
@@ -127,7 +132,11 @@ exports.login = async (req, res) => {
           id: user.id,
           firstName: user.first_name,
           lastName: user.last_name,
-          email: user.email
+          email: user.email,
+          role: user.role, // ✅ CORREÇÃO: INCLUIR ROLE
+          status: user.status,
+          emailVerified: user.email_verified,
+          createdAt: user.created_at
         },
         token
       }
@@ -158,6 +167,7 @@ exports.getProfile = async (req, res) => {
     }
 
     console.log('✅ Perfil encontrado:', user.email);
+    console.log('🎯 Role do usuário:', user.role); // ✅ LOG DA ROLE
 
     res.json({
       success: true,
@@ -167,7 +177,15 @@ exports.getProfile = async (req, res) => {
           firstName: user.first_name,
           lastName: user.last_name,
           email: user.email,
-          createdAt: user.created_at
+          role: user.role, // ✅ CORREÇÃO: INCLUIR ROLE
+          status: user.status,
+          phone: user.phone,
+          bio: user.bio,
+          avatarUrl: user.avatar_url,
+          emailVerified: user.email_verified,
+          lastLogin: user.last_login,
+          createdAt: user.created_at,
+          updatedAt: user.updated_at
         }
       }
     });
@@ -194,6 +212,64 @@ exports.listUsers = async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao listar usuários:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor'
+    });
+  }
+};
+
+// Atualizar perfil do usuário
+exports.updateProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, phone, bio } = req.body;
+    const userId = req.userId;
+
+    console.log('🔄 Atualizando perfil para userId:', userId);
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+
+    // Atualizar campos permitidos
+    const updatedFields = {};
+    if (firstName) updatedFields.first_name = firstName;
+    if (lastName) updatedFields.last_name = lastName;
+    if (phone !== undefined) updatedFields.phone = phone;
+    if (bio !== undefined) updatedFields.bio = bio;
+
+    await User.update(userId, updatedFields);
+
+    // Buscar usuário atualizado
+    const updatedUser = await User.findById(userId);
+
+    res.json({
+      success: true,
+      message: 'Perfil atualizado com sucesso',
+      data: {
+        user: {
+          id: updatedUser.id,
+          firstName: updatedUser.first_name,
+          lastName: updatedUser.last_name,
+          email: updatedUser.email,
+          role: updatedUser.role, // ✅ INCLUIR ROLE
+          status: updatedUser.status,
+          phone: updatedUser.phone,
+          bio: updatedUser.bio,
+          avatarUrl: updatedUser.avatar_url,
+          emailVerified: updatedUser.email_verified,
+          createdAt: updatedUser.created_at,
+          updatedAt: updatedUser.updated_at
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('💥 Erro ao atualizar perfil:', error);
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor'

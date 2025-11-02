@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
       passwordInput.type = 'password';
       icon.textContent = 'visibility';
     }
-  });
+  }); 
   
   // Indicador de força da senha
   document.getElementById('password')?.addEventListener('input', function() {

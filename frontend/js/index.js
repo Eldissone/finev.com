@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   if(getStarted){
     getStarted.addEventListener('click', ()=>{
       // send user to dashboard, but prefer login if not authenticated (login page will return)
-      const intended = '/frontend/pages/dashboard.html';
+      const intended = '/frontend/pages/';
       goToLogin(intended);
     });
   }

@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -13,14 +14,15 @@ const runMigrations = require('./database/migrate');
 const app = express();
 app.use(express.static('public'));
 
-
 // Middleware
 app.use(helmet());
 
 // Configuração CORS para múltiplas origens
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
-  'http://127.0.0.1:3000'
+  'http://127.0.0.1:3000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500'
 ];
 
 app.use(cors({
@@ -30,18 +32,50 @@ app.use(cors({
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('⚠️  CORS bloqueado para origem:', origin);
       callback(new Error('Não autorizado pelo CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
+// Log de requisições
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Rotas
+// Middleware para log de rotas (útil para debug)
+app.use((req, res, next) => {
+  if (req.method !== 'GET' || req.path.includes('/api/')) {
+    console.log(`📨 ${req.method} ${req.path}`, {
+      body: req.method !== 'GET' ? req.body : {},
+      query: req.query
+    });
+  }
+  next();
+});
+
+// Rotas públicas
 app.use('/api/auth', authRoutes);
+
+// Importar e usar rotas de users e admin apenas se existirem
+try {
+  const userRoutes = require('./routes/users');
+  app.use('/api/users', userRoutes);
+  console.log('✅ Rotas de usuários carregadas');
+} catch (error) {
+  console.log('⚠️  Rotas de usuários não disponíveis');
+}
+
+try {
+  const adminRoutes = require('./routes/admin');
+  app.use('/api/admin', adminRoutes);
+  console.log('✅ Rotas de admin carregadas');
+} catch (error) {
+  console.log('⚠️  Rotas de admin não disponíveis');
+}
 
 // Rota de saúde
 app.get('/api/health', async (req, res) => {
@@ -52,7 +86,8 @@ app.get('/api/health', async (req, res) => {
       success: true, 
       message: '✅ Servidor e banco estão operacionais',
       database: 'Conectado',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime()
     });
   } catch (error) {
     res.status(500).json({
@@ -71,23 +106,67 @@ app.get('/api/info', (req, res) => {
     data: {
       app: 'FIN Mentorship API',
       version: '1.0.0',
-      environment: process.env.NODE_ENV,
+      environment: process.env.NODE_ENV || 'development',
       database: {
         name: process.env.DB_NAME,
         host: process.env.DB_HOST,
         port: process.env.DB_PORT
       },
-      port: process.env.PORT
+      port: process.env.PORT,
+      features: {
+        authentication: true,
+        user_management: true,
+        admin_panel: true,
+        mentorship: 'em_breve',
+        content_management: 'em_breve'
+      }
     }
   });
 });
 
-// Middleware de erro
+// Rota para listar todas as rotas disponíveis
+app.get('/api/routes', (req, res) => {
+  const routes = [];
+  
+  app._router.stack.forEach(middleware => {
+    if (middleware.route) {
+      const methods = Object.keys(middleware.route.methods).map(method => method.toUpperCase());
+      routes.push({
+        path: middleware.route.path,
+        methods: methods
+      });
+    }
+  });
+
+  res.json({
+    success: true,
+    data: {
+      total_routes: routes.length,
+      routes: routes.sort((a, b) => a.path.localeCompare(b.path))
+    }
+  });
+});
+
+// Middleware de erro global
 app.use((error, req, res, next) => {
-  console.error('💥 Erro não tratado:', error);
+  console.error('💥 Erro não tratado:', {
+    message: error.message,
+    url: req.url,
+    method: req.method
+  });
+
+  // Erro de CORS
+  if (error.message.includes('CORS')) {
+    return res.status(403).json({
+      success: false,
+      message: 'Acesso bloqueado por política de CORS'
+    });
+  }
+
   res.status(500).json({
     success: false,
-    message: 'Erro interno do servidor'
+    message: 'Erro interno do servidor',
+    ...(process.env.NODE_ENV === 'development' && { debug: error.message })
   });
 });
 
@@ -95,7 +174,9 @@ app.use((error, req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Rota não encontrada'
+    message: 'Rota não encontrada',
+    requested_url: req.originalUrl,
+    available_routes: '/api/routes'
   });
 });
 
@@ -110,15 +191,19 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log('\n🎉 Servidor FIN Mentorship iniciado com sucesso!');
       console.log(`📍 Porta: ${PORT}`);
-      console.log(`📍 Ambiente: ${process.env.NODE_ENV}`);
+      console.log(`📍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📍 Banco: ${process.env.DB_NAME}`);
-      console.log('\n📋 Endpoints disponíveis:');
+      console.log('\n📋 Endpoints principais:');
       console.log(`   GET  http://localhost:${PORT}/api/health`);
       console.log(`   GET  http://localhost:${PORT}/api/info`);
+      console.log(`   GET  http://localhost:${PORT}/api/routes`);
       console.log(`   POST http://localhost:${PORT}/api/auth/register`);
       console.log(`   POST http://localhost:${PORT}/api/auth/login`);
       console.log(`   GET  http://localhost:${PORT}/api/auth/profile`);
-      console.log(`   GET  http://localhost:${PORT}/api/auth/users (debug)`);
+      
+      console.log('\n🔐 Credenciais de teste:');
+      console.log('   Email: admin@fin.com');
+      console.log('   Senha: admin123');
     });
     
   } catch (error) {
@@ -126,5 +211,16 @@ async function startServer() {
     process.exit(1);
   }
 }
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 Recebido SIGTERM, encerrando servidor...');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 Recebido SIGINT, encerrando servidor...');
+  process.exit(0);
+});
 
 startServer();
