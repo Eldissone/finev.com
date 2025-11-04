@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="../js/style.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
     <script id="tailwind-config">
@@ -69,7 +70,6 @@
             }
         }
 
-        /* Scrollbar personalizada */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -100,7 +100,7 @@
                     <a href="../index.html" class="text-2xl font-extrabold text-primary">FIN</a>
                     <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Admin</span>
                     <span id="admin-badge"
-                        class="ml-3 px-2 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full hidden">Administrador</span>
+                        class="ml-3 px-2 py-1 bg-primary/20 text-primary text-xs font-medium rounded-full">Administrador</span>
                 </div>
                 <nav class="hidden md:flex space-x-8">
                     <a href="../index.html"
@@ -202,12 +202,6 @@
                                 data-section="mentorias">
                                 <span class="material-symbols-outlined align-middle mr-3 text-sm">handshake</span>Gerir
                                 Mentorias
-                            </a>
-                            <a href="#conteudos"
-                                class="admin-nav-item block px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors"
-                                data-section="conteudos">
-                                <span class="material-symbols-outlined align-middle mr-3 text-sm">article</span>Gerir
-                                Conteúdo
                             </a>
                         </nav>
                     </div>
@@ -383,28 +377,137 @@
                         </div>
                     </section>
 
-                    <!-- Outras seções serão implementadas seguindo o mesmo padrão -->
+                    <!-- Gerir Mentores -->
                     <section id="mentores-section" class="admin-section hidden fade-in">
-                        <div class="text-center py-12">
-                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">school</span>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Mentores</h3>
-                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-text-main dark:text-white">Gerir Mentores</h2>
+                        </div>
+
+                        <div class="bg-white dark:bg-[#333333] rounded-lg shadow-sm">
+                            <div class="p-4 border-b border-slate-200 dark:border-slate-600">
+                                <div
+                                    class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                                    <div class="flex-1">
+                                        <div class="relative">
+                                            <span
+                                                class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">search</span>
+                                            <input type="text" id="mentor-search" placeholder="Buscar mentores..."
+                                                class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-4">
+                                        <select id="mentor-status-filter"
+                                            class="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                            <option value="">Todos os Status</option>
+                                            <option value="active">Ativo</option>
+                                            <option value="inactive">Inativo</option>
+                                            <option value="pending">Pendente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-slate-600">
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Mentor</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Especialização</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Experiência</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Avaliação</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Status</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mentores-table-body">
+                                        <tr>
+                                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                                <span class="material-symbols-outlined text-4xl mb-2">pending</span>
+                                                <p>Carregando mentores...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </section>
 
+                    <!-- Gerir Mentorias -->
                     <section id="mentorias-section" class="admin-section hidden fade-in">
-                        <div class="text-center py-12">
-                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">handshake</span>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Mentorias</h3>
-                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-bold text-text-main dark:text-white">Gerir Mentorias</h2>
                         </div>
-                    </section>
 
-                    <section id="conteudos-section" class="admin-section hidden fade-in">
-                        <div class="text-center py-12">
-                            <span class="material-symbols-outlined text-6xl text-slate-400 mb-4">article</span>
-                            <h3 class="text-xl font-bold text-text-main dark:text-white mb-2">Gestão de Conteúdo</h3>
-                            <p class="text-slate-600 dark:text-slate-300">Em desenvolvimento</p>
+                        <div class="bg-white dark:bg-[#333333] rounded-lg shadow-sm">
+                            <div class="p-4 border-b border-slate-200 dark:border-slate-600">
+                                <div
+                                    class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                                    <div class="flex-1">
+                                        <div class="relative">
+                                            <span
+                                                class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">search</span>
+                                            <input type="text" id="mentorship-search" placeholder="Buscar mentorias..."
+                                                class="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-4">
+                                        <select id="mentorship-status-filter"
+                                            class="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                                            <option value="">Todos os Status</option>
+                                            <option value="active">Ativa</option>
+                                            <option value="completed">Concluída</option>
+                                            <option value="cancelled">Cancelada</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-slate-200 dark:border-slate-600">
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Mentorado</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Mentor</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Data Início</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Status</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Progresso</th>
+                                            <th
+                                                class="text-left py-4 px-6 text-sm font-medium text-text-main dark:text-white">
+                                                Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mentorias-table-body">
+                                        <tr>
+                                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                                <span class="material-symbols-outlined text-4xl mb-2">pending</span>
+                                                <p>Carregando mentorias...</p>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </section>
                 </div>
@@ -478,14 +581,12 @@
                 this.currentUser = null;
                 this.currentSection = 'overview';
                 this.users = [];
+                this.mentors = [];
+                this.mentorships = [];
                 this.filters = {
-                    users: {
-                        search: '',
-                        status: '',
-                        role: '',
-                        page: 1,
-                        limit: 10
-                    }
+                    users: { search: '', status: '', role: '', page: 1, limit: 10 },
+                    mentors: { search: '', status: '', page: 1, limit: 10 },
+                    mentorships: { search: '', status: '', page: 1, limit: 10 }
                 };
                 this.debounceTimer = null;
             }
@@ -494,11 +595,10 @@
                 try {
                     console.log('🚀 Iniciando painel administrativo...');
                     this.showLoading(true);
-                    
-                    // Verificar autenticação primeiro
+
+                    // Verificar autenticação
                     const token = localStorage.getItem('fin_token');
                     if (!token) {
-                        console.log('❌ Nenhum token encontrado, redirecionando para login');
                         window.location.href = '../pages/login.html';
                         return;
                     }
@@ -506,15 +606,13 @@
                     // Verificar se é admin
                     const userData = this.auth.getCurrentUser();
                     if (!userData) {
-                        console.log('❌ Dados do usuário não encontrados');
                         window.location.href = '../pages/login.html';
                         return;
                     }
 
                     const isAdmin = userData.role === 'admin' || userData.role === 'administrator';
                     if (!isAdmin) {
-                        console.log('❌ Usuário não é admin, redirecionando para dashboard');
-                        window.location.href = '../dashboard';
+                        this.showAccessDenied();
                         return;
                     }
 
@@ -529,7 +627,6 @@
 
                     this.showLoading(false);
                     this.showContent(true);
-                    console.log('✅ Painel administrativo carregado com sucesso');
 
                 } catch (error) {
                     console.error('❌ Erro no painel administrativo:', error);
@@ -545,28 +642,31 @@
 
                     document.getElementById('user-name').textContent = userName;
                     document.getElementById('user-avatar').textContent = userInitials;
-                    document.getElementById('admin-badge').classList.remove('hidden');
                 }
             }
 
             async loadOverviewData() {
                 try {
                     console.log('📊 Carregando dados da visão geral...');
-                    
-                    // Dados mock para demonstração
-                    const mockStats = {
-                        totalUsers: 150,
-                        activeMentors: 25,
-                        activeMentorships: 89,
-                        completionRate: '78%'
-                    };
-                    
-                    this.updateStats(mockStats);
+
+                    // Buscar dados reais da API
+                    const stats = await this.api.getAdminStats();
+                    if (stats.success) {
+                        this.updateStats(stats.data);
+                    } else {
+                        // Fallback para dados mock
+                        this.updateStats({
+                            totalUsers: 0,
+                            activeMentors: 0,
+                            activeMentorships: 0,
+                            completionRate: '0%'
+                        });
+                    }
+
                     await this.loadRecentActivity();
-                    
+
                 } catch (error) {
                     console.error('❌ Erro ao carregar dados:', error);
-                    // Fallback para dados mock
                     this.updateStats({
                         totalUsers: 0,
                         activeMentors: 0,
@@ -586,109 +686,89 @@
             async loadRecentActivity() {
                 try {
                     console.log('📝 Carregando atividades recentes...');
-                    
-                    // Simular atividade recente
-                    const activities = [
-                        {
-                            type: 'user_registered',
-                            user: 'João Silva',
-                            time: 'Há 2 minutos',
-                            avatar: 'JS'
-                        },
-                        {
-                            type: 'mentor_promoted',
-                            user: 'Maria Santos',
-                            time: 'Há 15 minutos',
-                            avatar: 'MS'
-                        },
-                        {
-                            type: 'mentorship_created',
-                            user: 'Pedro Costa',
-                            time: 'Há 1 hora',
-                            avatar: 'PC'
-                        }
-                    ];
 
+                    const activities = await this.api.getRecentActivity();
                     const container = document.getElementById('recent-activity');
-                    container.innerHTML = activities.map(activity => `
-                        <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                                    ${activity.avatar}
+
+                    if (activities.success && activities.data.length > 0) {
+                        container.innerHTML = activities.data.map(activity => `
+                            <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                                        ${activity.userInitials}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="font-medium text-text-main dark:text-white">${activity.description}</p>
+                                        <p class="text-sm text-slate-600 dark:text-slate-300">${this.formatTime(activity.timestamp)}</p>
+                                    </div>
                                 </div>
-                                <div class="ml-3">
-                                    <p class="font-medium text-text-main dark:text-white">${activity.user} ${this.getActivityText(activity.type)}</p>
-                                    <p class="text-sm text-slate-600 dark:text-slate-300">${activity.time}</p>
-                                </div>
+                                <span class="px-2 py-1 ${this.getActivityBadgeClass(activity.type)} text-xs rounded-full">
+                                    ${this.getActivityTypeText(activity.type)}
+                                </span>
                             </div>
-                            <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs rounded-full">
-                                ${this.getActivityBadge(activity.type)}
-                            </span>
-                        </div>
-                    `).join('');
-                    
+                        `).join('');
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-8 text-slate-500">
+                                <span class="material-symbols-outlined text-4xl mb-2">info</span>
+                                <p>Nenhuma atividade recente</p>
+                            </div>
+                        `;
+                    }
+
                 } catch (error) {
                     console.error('❌ Erro ao carregar atividades:', error);
                 }
             }
 
-            getActivityText(type) {
-                const texts = {
-                    'user_registered': 'se registrou',
-                    'mentor_promoted': 'foi promovido(a) a mentor(a)',
-                    'mentorship_created': 'iniciou uma mentoria'
-                };
-                return texts[type] || 'realizou uma ação';
+            formatTime(timestamp) {
+                const now = new Date();
+                const activityTime = new Date(timestamp);
+                const diffMs = now - activityTime;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'Agora mesmo';
+                if (diffMins < 60) return `Há ${diffMins} min`;
+                if (diffHours < 24) return `Há ${diffHours} h`;
+                if (diffDays < 7) return `Há ${diffDays} dia${diffDays > 1 ? 's' : ''}`;
+                return activityTime.toLocaleDateString('pt-BR');
             }
 
-            getActivityBadge(type) {
-                const badges = {
+            getActivityBadgeClass(type) {
+                const classes = {
+                    'user_registered': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                    'mentor_promoted': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                    'mentorship_created': 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300',
+                    'mentorship_completed': 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300'
+                };
+                return classes[type] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300';
+            }
+
+            getActivityTypeText(type) {
+                const texts = {
                     'user_registered': 'Novo',
                     'mentor_promoted': 'Promoção',
-                    'mentorship_created': 'Nova'
+                    'mentorship_created': 'Nova',
+                    'mentorship_completed': 'Concluída'
                 };
-                return badges[type] || 'Info';
+                return texts[type] || 'Info';
             }
 
             async loadUsers() {
                 try {
                     console.log('👥 Carregando usuários...');
-                    
-                    // Simular dados de usuários
-                    const mockUsers = [
-                        {
-                            id: '1',
-                            firstName: 'João',
-                            lastName: 'Silva',
-                            email: 'joao@email.com',
-                            role: 'mentee',
-                            status: 'active',
-                            createdAt: new Date().toISOString()
-                        },
-                        {
-                            id: '2',
-                            firstName: 'Maria',
-                            lastName: 'Santos',
-                            email: 'maria@email.com',
-                            role: 'mentor',
-                            status: 'active',
-                            createdAt: new Date().toISOString()
-                        },
-                        {
-                            id: '3',
-                            firstName: 'Admin',
-                            lastName: 'Sistema',
-                            email: 'admin@email.com',
-                            role: 'admin',
-                            status: 'active',
-                            createdAt: new Date().toISOString()
-                        }
-                    ];
 
-                    this.users = mockUsers;
-                    this.renderUsersTable();
-                    this.updateUsersPagination({ total: mockUsers.length });
-                    
+                    const usersData = await this.api.getUsers(this.filters.users);
+                    if (usersData.success) {
+                        this.users = usersData.data.users || usersData.data;
+                        this.renderUsersTable();
+                        this.updateUsersPagination(usersData.data.pagination);
+                    } else {
+                        this.showToast('Erro ao carregar usuários', 'error');
+                    }
+
                 } catch (error) {
                     console.error('❌ Erro ao carregar usuários:', error);
                     this.showToast('Erro ao carregar usuários', 'error');
@@ -715,7 +795,7 @@
                         <td class="py-4 px-6">
                             <div class="flex items-center">
                                 <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-                                    ${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}
+                                    ${(user.firstName?.[0] || '') + (user.lastName?.[0] || '')}
                                 </div>
                                 <div class="ml-3">
                                     <p class="font-medium text-text-main dark:text-white">${user.firstName} ${user.lastName}</p>
@@ -795,9 +875,14 @@
                 if (!confirm('Tem certeza que deseja promover este usuário a mentor?')) return;
 
                 try {
-                    this.showToast('Usuário promovido a mentor com sucesso!', 'success');
-                    await this.loadUsers();
-                    await this.loadOverviewData();
+                    const result = await this.api.promoteToMentor(userId);
+                    if (result.success) {
+                        this.showToast('Usuário promovido a mentor com sucesso!', 'success');
+                        await this.loadUsers();
+                        await this.loadOverviewData();
+                    } else {
+                        this.showToast(result.message || 'Erro ao promover usuário', 'error');
+                    }
                 } catch (error) {
                     this.showToast('Erro ao promover usuário', 'error');
                 }
@@ -810,17 +895,29 @@
                 if (!confirm(`Tem certeza que deseja ${action} este usuário?`)) return;
 
                 try {
-                    this.showToast(`Usuário ${action === 'ativar' ? 'ativado' : 'suspenso'} com sucesso!`, 'success');
-                    await this.loadUsers();
+                    const result = await this.api.toggleUserStatus(userId, newStatus);
+                    if (result.success) {
+                        this.showToast(`Usuário ${action === 'ativar' ? 'ativado' : 'suspenso'} com sucesso!`, 'success');
+                        await this.loadUsers();
+                    } else {
+                        this.showToast(result.message || `Erro ao ${action} usuário`, 'error');
+                    }
                 } catch (error) {
                     this.showToast(`Erro ao ${action} usuário`, 'error');
                 }
             }
 
-            editUser(userId) {
-                const user = this.users.find(u => u.id === userId);
-                if (user) {
-                    this.openUserModal(user);
+            async editUser(userId) {
+                try {
+                    const result = await this.api.getUser(userId);
+                    if (result.success) {
+                        const user = result.data.user || result.data;
+                        this.openUserModal(user);
+                    } else {
+                        this.showToast('Erro ao carregar usuário', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Erro ao carregar usuário', 'error');
                 }
             }
 
@@ -831,7 +928,6 @@
                 const passwordFields = document.getElementById('password-fields');
 
                 if (user) {
-                    // Editar usuário existente
                     title.textContent = 'Editar Usuário';
                     document.getElementById('user-id').value = user.id;
                     document.getElementById('user-firstName').value = user.firstName || '';
@@ -842,7 +938,6 @@
                     document.getElementById('user-password').value = '';
                     passwordFields.style.display = 'none';
                 } else {
-                    // Novo usuário
                     title.textContent = 'Novo Usuário';
                     form.reset();
                     document.getElementById('user-id').value = '';
@@ -877,10 +972,21 @@
                 }
 
                 try {
-                    this.showToast(`Usuário ${userId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
-                    this.closeUserModal();
-                    await this.loadUsers();
-                    await this.loadOverviewData();
+                    let result;
+                    if (userId) {
+                        result = await this.api.updateUser(userId, formData);
+                    } else {
+                        result = await this.api.register(formData);
+                    }
+
+                    if (result.success) {
+                        this.showToast(`Usuário ${userId ? 'atualizado' : 'criado'} com sucesso!`, 'success');
+                        this.closeUserModal();
+                        await this.loadUsers();
+                        await this.loadOverviewData();
+                    } else {
+                        this.showToast(result.message || `Erro ao ${userId ? 'atualizar' : 'criar'} usuário`, 'error');
+                    }
                 } catch (error) {
                     this.showToast(`Erro ao ${userId ? 'atualizar' : 'criar'} usuário`, 'error');
                 }
@@ -900,6 +1006,198 @@
                 paginationElement.innerHTML = '';
             }
 
+            async loadMentores() {
+                try {
+                    console.log('👨‍🏫 Carregando mentores...');
+
+                    const mentorsData = await this.api.getMentors(this.filters.mentors);
+                    if (mentorsData.success) {
+                        this.mentors = mentorsData.data.mentors || mentorsData.data;
+                        this.renderMentoresTable();
+                    } else {
+                        this.showToast('Erro ao carregar mentores', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('❌ Erro ao carregar mentores:', error);
+                    this.showToast('Erro ao carregar mentores', 'error');
+                }
+            }
+
+            renderMentoresTable() {
+                const tbody = document.getElementById('mentores-table-body');
+
+                if (!this.mentors || this.mentors.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+                                <p>Nenhum mentor encontrado</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.mentors.map(mentor => `
+                    <tr class="border-b border-slate-200 dark:border-slate-600">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
+                                    ${(mentor.firstName?.[0] || '') + (mentor.lastName?.[0] || '')}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-text-main dark:text-white">${mentor.firstName} ${mentor.lastName}</p>
+                                    <p class="text-sm text-slate-600 dark:text-slate-300">${mentor.email}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">${mentor.specialization || 'Não definida'}</td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">${mentor.experienceYears || 0} anos</td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined text-yellow-500 text-sm mr-1">star</span>
+                                ${mentor.rating || '0.0'}
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 ${mentor.isVerified ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'} text-xs rounded-full">
+                                ${mentor.isVerified ? 'Verificado' : 'Pendente'}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex space-x-2">
+                                <button onclick="adminPanel.verifyMentor('${mentor.id}')" class="p-1 text-green-600 hover:text-green-800 transition-colors" title="${mentor.isVerified ? 'Desverificar' : 'Verificar'}">
+                                    <span class="material-symbols-outlined text-sm">${mentor.isVerified ? 'verified' : 'verification'}</span>
+                                </button>
+                                <button onclick="adminPanel.viewMentorProfile('${mentor.id}')" class="p-1 text-blue-600 hover:text-blue-800 transition-colors" title="Ver Perfil">
+                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            async verifyMentor(mentorId) {
+                try {
+                    const result = await this.api.verifyMentor(mentorId);
+                    if (result.success) {
+                        this.showToast('Status do mentor atualizado com sucesso!', 'success');
+                        await this.loadMentores();
+                    } else {
+                        this.showToast('Erro ao atualizar status do mentor', 'error');
+                    }
+                } catch (error) {
+                    this.showToast('Erro ao atualizar status do mentor', 'error');
+                }
+            }
+
+            async loadMentorias() {
+                try {
+                    console.log('🤝 Carregando mentorias...');
+
+                    const mentorshipsData = await this.api.getMentorships(this.filters.mentorships);
+                    if (mentorshipsData.success) {
+                        this.mentorships = mentorshipsData.data.mentorships || mentorshipsData.data;
+                        this.renderMentoriasTable();
+                    } else {
+                        this.showToast('Erro ao carregar mentorias', 'error');
+                    }
+
+                } catch (error) {
+                    console.error('❌ Erro ao carregar mentorias:', error);
+                    this.showToast('Erro ao carregar mentorias', 'error');
+                }
+            }
+
+            renderMentoriasTable() {
+                const tbody = document.getElementById('mentorias-table-body');
+
+                if (!this.mentorships || this.mentorships.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-8 text-center text-slate-500">
+                                <span class="material-symbols-outlined text-4xl mb-2">search_off</span>
+                                <p>Nenhuma mentoria encontrada</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = this.mentorships.map(mentorship => `
+                    <tr class="border-b border-slate-200 dark:border-slate-600">
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                                    ${(mentorship.menteeFirstName?.[0] || '') + (mentorship.menteeLastName?.[0] || '')}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-text-main dark:text-white">${mentorship.menteeFirstName} ${mentorship.menteeLastName}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-sm">
+                                    ${(mentorship.mentorFirstName?.[0] || '') + (mentorship.mentorLastName?.[0] || '')}
+                                </div>
+                                <div class="ml-3">
+                                    <p class="font-medium text-text-main dark:text-white">${mentorship.mentorFirstName} ${mentorship.mentorLastName}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">
+                            ${mentorship.startDate ? new Date(mentorship.startDate).toLocaleDateString('pt-BR') : 'N/A'}
+                        </td>
+                        <td class="py-4 px-6">
+                            <span class="px-2 py-1 ${this.getMentorshipStatusClass(mentorship.status)} text-xs rounded-full">
+                                ${this.getMentorshipStatusText(mentorship.status)}
+                            </span>
+                        </td>
+                        <td class="py-4 px-6 text-text-main dark:text-white">
+                            <div class="flex items-center">
+                                <div class="w-16 bg-slate-200 dark:bg-slate-600 rounded-full h-2 mr-2">
+                                    <div class="bg-primary h-2 rounded-full" style="width: ${mentorship.progress || 0}%"></div>
+                                </div>
+                                <span>${mentorship.progress || 0}%</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-6">
+                            <div class="flex space-x-2">
+                                <button onclick="adminPanel.viewMentorshipDetails('${mentorship.id}')" class="p-1 text-blue-600 hover:text-blue-800 transition-colors" title="Ver Detalhes">
+                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                </button>
+                                <button onclick="adminPanel.manageMentorship('${mentorship.id}')" class="p-1 text-green-600 hover:text-green-800 transition-colors" title="Gerir Mentoria">
+                                    <span class="material-symbols-outlined text-sm">settings</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            getMentorshipStatusClass(status) {
+                const classes = {
+                    'active': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                    'completed': 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                    'cancelled': 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+                    'pending': 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
+                };
+                return classes[status] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-800 dark:text-gray-300';
+            }
+
+            getMentorshipStatusText(status) {
+                const texts = {
+                    'active': 'Ativa',
+                    'completed': 'Concluída',
+                    'cancelled': 'Cancelada',
+                    'pending': 'Pendente'
+                };
+                return texts[status] || status;
+            }
+
             setupNavigation() {
                 const navItems = document.querySelectorAll('.admin-nav-item');
 
@@ -911,9 +1209,17 @@
                     });
                 });
 
-                // Carregar dados da seção usuários quando acessada
+                // Carregar dados quando acessar cada seção
                 document.querySelector('[data-section="usuarios"]').addEventListener('click', () => {
                     this.loadUsers();
+                });
+
+                document.querySelector('[data-section="mentores"]').addEventListener('click', () => {
+                    this.loadMentores();
+                });
+
+                document.querySelector('[data-section="mentorias"]').addEventListener('click', () => {
+                    this.loadMentorias();
                 });
             }
 
@@ -941,7 +1247,7 @@
             setupEventListeners() {
                 // Tema
                 document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
-                
+
                 // Logout
                 document.getElementById('logout-btn').addEventListener('click', () => {
                     this.auth.logout();
@@ -964,6 +1270,32 @@
                     this.filters.users.role = e.target.value;
                     this.filters.users.page = 1;
                     this.loadUsers();
+                });
+
+                // Filtros de mentores
+                document.getElementById('mentor-search').addEventListener('input', (e) => {
+                    this.filters.mentors.search = e.target.value;
+                    this.filters.mentors.page = 1;
+                    this.debounce(() => this.loadMentores(), 500);
+                });
+
+                document.getElementById('mentor-status-filter').addEventListener('change', (e) => {
+                    this.filters.mentors.status = e.target.value;
+                    this.filters.mentors.page = 1;
+                    this.loadMentores();
+                });
+
+                // Filtros de mentorias
+                document.getElementById('mentorship-search').addEventListener('input', (e) => {
+                    this.filters.mentorships.search = e.target.value;
+                    this.filters.mentorships.page = 1;
+                    this.debounce(() => this.loadMentorias(), 500);
+                });
+
+                document.getElementById('mentorship-status-filter').addEventListener('change', (e) => {
+                    this.filters.mentorships.status = e.target.value;
+                    this.filters.mentorships.page = 1;
+                    this.loadMentorias();
                 });
 
                 // Formulário de usuário
@@ -989,8 +1321,8 @@
 
                 const toast = document.createElement('div');
                 toast.className = `toast-message fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${type === 'success' ? 'bg-success text-white' :
-                        type === 'error' ? 'bg-danger text-white' :
-                            'bg-primary text-white'
+                    type === 'error' ? 'bg-danger text-white' :
+                        'bg-primary text-white'
                     }`;
                 toast.textContent = message;
 
@@ -1034,6 +1366,19 @@
                     html.classList.add('dark');
                     localStorage.setItem('theme', 'dark');
                 }
+            }
+
+            // Métodos placeholder para funcionalidades futuras
+            viewMentorProfile(mentorId) {
+                this.showToast(`Visualizando perfil do mentor ${mentorId}`, 'info');
+            }
+
+            viewMentorshipDetails(mentorshipId) {
+                this.showToast(`Visualizando detalhes da mentoria ${mentorshipId}`, 'info');
+            }
+
+            manageMentorship(mentorshipId) {
+                this.showToast(`Gerindo mentoria ${mentorshipId}`, 'info');
             }
         }
 

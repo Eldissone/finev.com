@@ -1,7 +1,7 @@
 // backend/routes/users.js
 const express = require('express');
 const router = express.Router();
-const authMiddleware = require('../middlewares/authMiddleware');
+const authMiddleware = require('../middlewares/auth');
 
 // Todas as rotas exigem autenticação
 router.use(authMiddleware);

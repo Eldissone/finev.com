@@ -167,7 +167,6 @@ async function createTables() {
         'UPDATE users SET role = $1 WHERE email = $2',
         ['admin', 'admin@fin.com']
       );
-      console.log('👑 Usuário admin atualizado com role de administrador');
     }
 
     // Verificar roles dos usuários existentes

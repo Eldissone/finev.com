@@ -1,4 +1,4 @@
-// middleware/auth.js - CORRIGIDO
+// backend/middlewares/auth.js
 const jwt = require('jsonwebtoken');
 
 const authenticate = (req, res, next) => {
@@ -41,7 +41,13 @@ const authenticate = (req, res, next) => {
     
     console.log('✅ Token válido para usuário:', decoded.userId);
     
-    req.userId = decoded.userId;
+    // Adicionar informações do usuário ao request
+    req.user = {
+      id: decoded.userId,
+      // Adicione outras informações que você tem no token JWT
+      role: decoded.role || 'user' // Assumindo que o role está no token
+    };
+    
     next();
 
   } catch (error) {

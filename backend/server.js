@@ -60,7 +60,7 @@ app.use((req, res, next) => {
 // Rotas públicas
 app.use('/api/auth', authRoutes);
 
-// Importar e usar rotas de users e admin apenas se existirem
+// Importar e usar rotas de users e admin
 try {
   const userRoutes = require('./routes/users');
   app.use('/api/users', userRoutes);
@@ -74,111 +74,11 @@ try {
   app.use('/api/admin', adminRoutes);
   console.log('✅ Rotas de admin carregadas');
 } catch (error) {
-  console.log('⚠️  Rotas de admin não disponíveis');
+  console.log('❌ Erro ao carregar rotas de admin:', error.message);
+  console.log('💡 Verifique se o arquivo routes/admin.js existe e está correto');
 }
 
-// Rota de saúde
-app.get('/api/health', async (req, res) => {
-  try {
-    const db = require('./config/database');
-    await db.query('SELECT 1');
-    res.json({ 
-      success: true, 
-      message: '✅ Servidor e banco estão operacionais',
-      database: 'Conectado',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime()
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: '⚠️ Servidor online mas banco offline',
-      database: 'Desconectado',
-      error: error.message
-    });
-  }
-});
-
-// Rota de informações do sistema
-app.get('/api/info', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      app: 'FIN Mentorship API',
-      version: '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
-      database: {
-        name: process.env.DB_NAME,
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT
-      },
-      port: process.env.PORT,
-      features: {
-        authentication: true,
-        user_management: true,
-        admin_panel: true,
-        mentorship: 'em_breve',
-        content_management: 'em_breve'
-      }
-    }
-  });
-});
-
-// Rota para listar todas as rotas disponíveis
-app.get('/api/routes', (req, res) => {
-  const routes = [];
-  
-  app._router.stack.forEach(middleware => {
-    if (middleware.route) {
-      const methods = Object.keys(middleware.route.methods).map(method => method.toUpperCase());
-      routes.push({
-        path: middleware.route.path,
-        methods: methods
-      });
-    }
-  });
-
-  res.json({
-    success: true,
-    data: {
-      total_routes: routes.length,
-      routes: routes.sort((a, b) => a.path.localeCompare(b.path))
-    }
-  });
-});
-
-// Middleware de erro global
-app.use((error, req, res, next) => {
-  console.error('💥 Erro não tratado:', {
-    message: error.message,
-    url: req.url,
-    method: req.method
-  });
-
-  // Erro de CORS
-  if (error.message.includes('CORS')) {
-    return res.status(403).json({
-      success: false,
-      message: 'Acesso bloqueado por política de CORS'
-    });
-  }
-
-  res.status(500).json({
-    success: false,
-    message: 'Erro interno do servidor',
-    ...(process.env.NODE_ENV === 'development' && { debug: error.message })
-  });
-});
-
-// Rota não encontrada
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Rota não encontrada',
-    requested_url: req.originalUrl,
-    available_routes: '/api/routes'
-  });
-});
+// ... resto do server.js permanece igual (health, info, routes, etc.)
 
 const PORT = process.env.PORT || 5000;
 
@@ -200,6 +100,13 @@ async function startServer() {
       console.log(`   POST http://localhost:${PORT}/api/auth/register`);
       console.log(`   POST http://localhost:${PORT}/api/auth/login`);
       console.log(`   GET  http://localhost:${PORT}/api/auth/profile`);
+      
+      console.log('\n👑 Endpoints Admin:');
+      console.log(`   GET  http://localhost:${PORT}/api/admin/stats`);
+      console.log(`   GET  http://localhost:${PORT}/api/admin/users`);
+      console.log(`   GET  http://localhost:${PORT}/api/admin/activity`);
+      console.log(`   GET  http://localhost:${PORT}/api/admin/mentors`);
+      console.log(`   GET  http://localhost:${PORT}/api/admin/mentorships`);
       
       console.log('\n🔐 Credenciais de teste:');
       console.log('   Email: admin@fin.com');

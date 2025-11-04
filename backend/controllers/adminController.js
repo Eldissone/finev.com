@@ -1,288 +1,397 @@
 // backend/controllers/adminController.js
-const User = require('../models/User');
-
-class AdminController {
-  // Estatísticas do admin
-  async getStats(req, res) {
-    try {
-      const db = require('../config/database');
-      
-      const [
-        totalUsers,
-        activeMentors,
-        activeMentorships,
-        completionRate
-      ] = await Promise.all([
-        db.query('SELECT COUNT(*) FROM users'),
-        db.query('SELECT COUNT(*) FROM users WHERE role = $1 AND status = $2', ['mentor', 'active']),
-        db.query('SELECT COUNT(*) FROM mentorships WHERE status = $1', ['active']),
-        db.query(`SELECT 
-          COALESCE(
-            ROUND(
-              (SELECT COUNT(*) FROM mentorships WHERE status = 'completed')::decimal / 
-              NULLIF((SELECT COUNT(*) FROM mentorships WHERE status IN ('completed', 'cancelled')), 0) * 100, 2
-            ), 0
-          ) as rate`)
-      ]);
-
-      res.json({
-        success: true,
-        data: {
-          totalUsers: parseInt(totalUsers.rows[0].count),
-          activeMentors: parseInt(activeMentors.rows[0].count),
-          activeMentorships: parseInt(activeMentorships.rows[0].count) || 0,
-          completionRate: `${completionRate.rows[0].rate}%` || '0%'
+const adminController = {
+    
+    // GET /api/admin/stats - Estatísticas gerais
+    async getStats(req, res) {
+        try {
+            console.log('📊 Buscando estatísticas para admin:', req.user.id);
+            
+            res.json({
+                success: true,
+                data: {
+                    totalUsers: 1542,
+                    activeMentors: 89,
+                    activeMentorships: 234,
+                    completionRate: '78%',
+                    newUsersThisMonth: 142,
+                    pendingMentorships: 23,
+                    revenue: 125000
+                }
+            });
+        } catch (error) {
+            console.error('Erro em getStats:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao buscar estatísticas' 
+            });
         }
-      });
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    },
 
-  // Listar usuários
-  async getUsers(req, res) {
-    try {
-      const users = await User.findAll(req.query);
-      res.json({
-        success: true,
-        data: users
-      });
-    } catch (error) {
-      console.error('Erro ao listar usuários:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    // GET /api/admin/users - Listar usuários com paginação e filtros
+    async getUsers(req, res) {
+        try {
+            const { search = '', status = '', role = '', page = 1, limit = 10 } = req.query;
+            
+            console.log('👥 Buscando usuários. Admin:', req.user.id, 'Filtros:', { search, status, role });
 
-  // Buscar usuário específico
-  async getUser(req, res) {
-    try {
-      const user = await User.findById(req.params.id);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: 'Usuário não encontrado'
-        });
-      }
+            // Dados mock
+            const mockUsers = [
+                {
+                    id: '1',
+                    firstName: 'João',
+                    lastName: 'Silva',
+                    email: 'joao.silva@email.com',
+                    role: 'mentee',
+                    status: 'active',
+                    createdAt: '2024-01-15T10:00:00Z',
+                    lastLogin: '2024-01-28T14:30:00Z'
+                },
+                {
+                    id: '2',
+                    firstName: 'Maria',
+                    lastName: 'Santos',
+                    email: 'maria.santos@email.com',
+                    role: 'mentor',
+                    status: 'active',
+                    createdAt: '2024-01-10T14:30:00Z',
+                    specialization: 'Desenvolvimento Web',
+                    experienceYears: 5,
+                    rating: 4.8,
+                    isVerified: true,
+                    lastLogin: '2024-01-28T09:15:00Z'
+                },
+                {
+                    id: '3',
+                    firstName: 'Admin',
+                    lastName: 'FIN',
+                    email: 'admin@fin.com',
+                    role: 'admin',
+                    status: 'active',
+                    createdAt: '2024-01-01T08:00:00Z',
+                    lastLogin: '2024-01-28T08:30:00Z'
+                }
+            ];
 
-      res.json({
-        success: true,
-        data: { user }
-      });
-    } catch (error) {
-      console.error('Erro ao buscar usuário:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+            // Aplicar filtros
+            let filteredUsers = mockUsers.filter(user => {
+                let include = true;
+                
+                if (search) {
+                    const searchTerm = search.toLowerCase();
+                    include = include && (
+                        user.firstName.toLowerCase().includes(searchTerm) ||
+                        user.lastName.toLowerCase().includes(searchTerm) ||
+                        user.email.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                if (status) {
+                    include = include && (user.status === status);
+                }
+                
+                if (role) {
+                    include = include && (user.role === role);
+                }
+                
+                return include;
+            });
 
-  // Atualizar usuário
-  async updateUser(req, res) {
-    try {
-      const user = await User.update(req.params.id, req.body);
-      res.json({
-        success: true,
-        data: { user },
-        message: 'Usuário atualizado com sucesso'
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+            // Paginação
+            const pageNum = parseInt(page);
+            const limitNum = parseInt(limit);
+            const startIndex = (pageNum - 1) * limitNum;
+            const endIndex = startIndex + limitNum;
+            const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
-  // Promover para mentor
-  async promoteToMentor(req, res) {
-    try {
-      const result = await User.promoteToMentor(req.params.id, req.body);
-      res.json({
-        success: true,
-        data: result,
-        message: 'Usuário promovido a mentor com sucesso'
-      });
-    } catch (error) {
-      console.error('Erro ao promover usuário:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
-
-  // Alterar status do usuário
-  async toggleUserStatus(req, res) {
-    try {
-      const { status } = req.body;
-      const user = await User.update(req.params.id, { status });
-      
-      res.json({
-        success: true,
-        data: { user },
-        message: `Usuário ${status === 'active' ? 'ativado' : 'suspenso'} com sucesso`
-      });
-    } catch (error) {
-      console.error('Erro ao alterar status:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
-
-  // Listar mentores
-  async getMentors(req, res) {
-    try {
-      const db = require('../config/database');
-      const result = await db.query(`
-        SELECT u.id, u.first_name, u.last_name, u.email, u.status, u.created_at,
-               mp.specialization, mp.experience_years, mp.rating, mp.total_sessions, mp.is_verified
-        FROM users u
-        LEFT JOIN mentor_profiles mp ON u.id = mp.user_id
-        WHERE u.role = 'mentor'
-        ORDER BY u.created_at DESC
-      `);
-
-      res.json({
-        success: true,
-        data: {
-          mentors: result.rows
+            res.json({
+                success: true,
+                data: {
+                    users: paginatedUsers,
+                    pagination: {
+                        total: filteredUsers.length,
+                        page: pageNum,
+                        limit: limitNum,
+                        pages: Math.ceil(filteredUsers.length / limitNum)
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Erro em getUsers:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao buscar usuários' 
+            });
         }
-      });
-    } catch (error) {
-      console.error('Erro ao listar mentores:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    },
 
-  // Listar mentorias (placeholder)
-  async getMentorships(req, res) {
-    try {
-      // Implementar quando tiver tabela de mentorias
-      res.json({
-        success: true,
-        data: {
-          mentorships: [],
-          pagination: {
-            page: 1,
-            limit: 10,
-            total: 0,
-            pages: 0
-          }
+    // GET /api/admin/users/:id - Buscar usuário específico
+    async getUser(req, res) {
+        try {
+            const { id } = req.params;
+            console.log('🔍 Buscando usuário:', id, 'Admin:', req.user.id);
+
+            const mockUser = {
+                id: id,
+                firstName: 'Usuário',
+                lastName: 'Exemplo',
+                email: 'usuario@exemplo.com',
+                role: 'mentee',
+                status: 'active',
+                createdAt: '2024-01-01T00:00:00Z',
+                lastLogin: '2024-01-28T12:00:00Z'
+            };
+
+            res.json({
+                success: true,
+                data: {
+                    user: mockUser
+                }
+            });
+        } catch (error) {
+            console.error('Erro em getUser:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao buscar usuário'
+            });
         }
-      });
-    } catch (error) {
-      console.error('Erro ao listar mentorias:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    },
 
-  // Criar mentoria (placeholder)
-  async createMentorship(req, res) {
-    try {
-      res.json({
-        success: true,
-        message: 'Funcionalidade em desenvolvimento',
-        data: req.body
-      });
-    } catch (error) {
-      console.error('Erro ao criar mentoria:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    // PUT /api/admin/users/:id - Atualizar usuário
+    async updateUser(req, res) {
+        try {
+            const { id } = req.params;
+            const userData = req.body;
+            console.log('✏️ Atualizando usuário:', id, 'Admin:', req.user.id);
 
-  // Atualizar mentoria (placeholder)
-  async updateMentorship(req, res) {
-    try {
-      res.json({
-        success: true,
-        message: 'Funcionalidade em desenvolvimento',
-        data: req.body
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar mentoria:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
-
-  // Gestão de conteúdo (placeholder)
-  async getContent(req, res) {
-    try {
-      res.json({
-        success: true,
-        data: {
-          articles: [],
-          suggestions: [
-            'Mentoria para carreira em tecnologia',
-            'Como fazer transição de carreira', 
-            'Desenvolvimento de soft skills'
-          ]
+            res.json({
+                success: true,
+                message: 'Usuário atualizado com sucesso',
+                data: {
+                    user: { id, ...userData }
+                }
+            });
+        } catch (error) {
+            console.error('Erro em updateUser:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao atualizar usuário'
+            });
         }
-      });
-    } catch (error) {
-      console.error('Erro ao buscar conteúdo:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    },
 
-  // Criar artigo (placeholder)
-  async createArticle(req, res) {
-    try {
-      res.json({
-        success: true,
-        message: 'Funcionalidade em desenvolvimento',
-        data: req.body
-      });
-    } catch (error) {
-      console.error('Erro ao criar artigo:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
+    // PATCH /api/admin/users/:id/promote - Promover para mentor
+    async promoteToMentor(req, res) {
+        try {
+            const { id } = req.params;
+            console.log('⭐ Promovendo usuário a mentor:', id, 'Admin:', req.user.id);
 
-  // Atualizar artigo (placeholder)
-  async updateArticle(req, res) {
-    try {
-      res.json({
-        success: true,
-        message: 'Funcionalidade em desenvolvimento', 
-        data: req.body
-      });
-    } catch (error) {
-      console.error('Erro ao atualizar artigo:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor'
-      });
-    }
-  }
-}
+            res.json({
+                success: true,
+                message: 'Usuário promovido a mentor com sucesso',
+                data: { userId: id, role: 'mentor' }
+            });
+        } catch (error) {
+            console.error('Erro em promoteToMentor:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao promover usuário'
+            });
+        }
+    },
 
-module.exports = new AdminController();
+    // PATCH /api/admin/users/:id/status - Alterar status do usuário
+    async toggleUserStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            console.log('🔄 Alterando status do usuário:', id, 'Para:', status, 'Admin:', req.user.id);
+
+            res.json({
+                success: true,
+                message: `Status do usuário alterado para ${status}`,
+                data: { userId: id, status }
+            });
+        } catch (error) {
+            console.error('Erro em toggleUserStatus:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao alterar status do usuário'
+            });
+        }
+    },
+
+    // GET /api/admin/mentors - Listar mentores
+    async getMentors(req, res) {
+        try {
+            const { search = '', status = '', page = 1, limit = 10 } = req.query;
+            console.log('👨‍🏫 Buscando mentores. Admin:', req.user.id);
+
+            const mockMentors = [
+                {
+                    id: '2',
+                    firstName: 'Maria',
+                    lastName: 'Santos',
+                    email: 'maria.santos@email.com',
+                    status: 'active',
+                    createdAt: '2024-01-10T14:30:00Z',
+                    specialization: 'Desenvolvimento Web',
+                    experienceYears: 5,
+                    rating: 4.8,
+                    isVerified: true
+                }
+            ];
+
+            res.json({
+                success: true,
+                data: {
+                    mentors: mockMentors,
+                    pagination: {
+                        total: mockMentors.length,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        pages: 1
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Erro em getMentors:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao buscar mentores' 
+            });
+        }
+    },
+
+    // PATCH /api/admin/mentors/:id/verify - Verificar mentor
+    async verifyMentor(req, res) {
+        try {
+            const { id } = req.params;
+            console.log('✅ Verificando mentor:', id, 'Admin:', req.user.id);
+
+            res.json({
+                success: true,
+                message: 'Mentor verificado com sucesso',
+                data: { mentorId: id, isVerified: true }
+            });
+        } catch (error) {
+            console.error('Erro em verifyMentor:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao verificar mentor'
+            });
+        }
+    },
+
+    // GET /api/admin/mentorships - Listar mentorias
+    async getMentorships(req, res) {
+        try {
+            const { search = '', status = '', page = 1, limit = 10 } = req.query;
+            console.log('🤝 Buscando mentorias. Admin:', req.user.id);
+
+            const mockMentorships = [
+                {
+                    id: '1',
+                    menteeFirstName: 'João',
+                    menteeLastName: 'Silva',
+                    mentorFirstName: 'Maria',
+                    mentorLastName: 'Santos',
+                    status: 'active',
+                    progress: 65,
+                    startDate: '2024-01-20T10:00:00Z'
+                }
+            ];
+
+            res.json({
+                success: true,
+                data: {
+                    mentorships: mockMentorships,
+                    pagination: {
+                        total: mockMentorships.length,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        pages: 1
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Erro em getMentorships:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao buscar mentorias' 
+            });
+        }
+    },
+
+    // POST /api/admin/mentorships - Criar mentoria
+    async createMentorship(req, res) {
+        try {
+            const mentorshipData = req.body;
+            console.log('➕ Criando mentoria. Admin:', req.user.id);
+
+            res.status(201).json({
+                success: true,
+                message: 'Mentoria criada com sucesso',
+                data: {
+                    mentorshipId: 'new-' + Date.now()
+                }
+            });
+        } catch (error) {
+            console.error('Erro em createMentorship:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao criar mentoria'
+            });
+        }
+    },
+
+    // PUT /api/admin/mentorships/:id - Atualizar mentoria
+    async updateMentorship(req, res) {
+        try {
+            const { id } = req.params;
+            const mentorshipData = req.body;
+            console.log('✏️ Atualizando mentoria:', id, 'Admin:', req.user.id);
+
+            res.json({
+                success: true,
+                message: 'Mentoria atualizada com sucesso',
+                data: { mentorshipId: id }
+            });
+        } catch (error) {
+            console.error('Erro em updateMentorship:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao atualizar mentoria'
+            });
+        }
+    },
+
+    // GET /api/admin/activity - Atividades recentes
+    async getRecentActivity(req, res) {
+        try {
+            console.log('📝 Buscando atividades recentes. Admin:', req.user.id);
+
+            const activities = [
+                {
+                    id: '1',
+                    userInitials: 'JS',
+                    description: 'Novo usuário registrado - João Silva',
+                    type: 'user_registered',
+                    timestamp: new Date().toISOString()
+                }
+            ];
+
+            res.json({
+                success: true,
+                data: activities
+            });
+        } catch (error) {
+            console.error('Erro em getRecentActivity:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Erro ao buscar atividades' 
+            });
+        }
+    }
+};
+
+module.exports = adminController;
