@@ -15,7 +15,6 @@ const authenticate = (req, res, next) => {
       });
     }
 
-    // Verificar formato do token
     if (!authHeader.startsWith('Bearer ')) {
       console.log('❌ Formato de token inválido');
       return res.status(401).json({
@@ -24,8 +23,7 @@ const authenticate = (req, res, next) => {
       });
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer "
-    
+    const token = authHeader.substring(7);
     console.log('📋 Token recebido:', token ? 'SIM' : 'NÃO');
 
     if (!token) {
@@ -40,13 +38,19 @@ const authenticate = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     console.log('✅ Token válido para usuário:', decoded.userId);
+    console.log('🔍 Token decodificado completo:', decoded);
     
-    // Adicionar informações do usuário ao request
+    // 🔥 CORREÇÃO: Definir AMBOS req.user E req.userId para compatibilidade
     req.user = {
       id: decoded.userId,
-      // Adicione outras informações que você tem no token JWT
-      role: decoded.role || 'user' // Assumindo que o role está no token
+      role: decoded.role || 'user'
     };
+    
+    // 🔥 CORREÇÃO CRÍTICA: Definir req.userId também
+    req.userId = decoded.userId;
+    
+    console.log('🔍 DEBUG - req.user:', req.user);
+    console.log('🔍 DEBUG - req.userId:', req.userId);
     
     next();
 

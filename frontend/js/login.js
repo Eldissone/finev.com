@@ -81,11 +81,11 @@ document.addEventListener('DOMContentLoaded', function() {
               if (user.role === 'admin') {
                 window.location.href = '../admin/index.html';
               } else {
-                window.location.href = '/dashboard';
+                window.location.href = '../dashboard/index.html';
               }
             }
           }
-        }, 2000);
+        }, 500);
         
       } else {
         showError(result.message || 'Email ou senha incorretos.');

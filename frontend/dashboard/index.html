@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -8,8 +7,8 @@
   <link rel="icon" href="../src/public/finev.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="../js/style.js"></script>
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
@@ -21,9 +20,22 @@
             "background-dark": "#1A1A1A",
             "text-main": "#333333",
             "success": "#2ECC71",
+            "surface-light": "#FFFFFF",
+            "surface-dark": "#212121",
+            "text-secondary": "#666666",
+            "text-main-dark": "#E0E0E0",
+            "text-secondary-dark": "#A0A0A0",
+            "info": "#3498DB",
+            "warning": "#F39C12",
           },
           fontFamily: {
             "display": ["Manrope"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "full": "9999px"
           },
         },
       },
@@ -43,14 +55,124 @@
       opacity: 0.6;
       pointer-events: none;
     }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+    
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .message-animation {
+      animation: fadeInUp 0.3s ease-out;
+    }
+
+    .typing-dot {
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typingAnimation {
+      0%, 80%, 100% { 
+        transform: scale(0.8);
+        opacity: 0.5;
+      }
+      40% { 
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .chat-message {
+      line-height: 1.5;
+    }
+    
+    .chat-message strong {
+      font-weight: 700;
+      color: inherit;
+    }
+    
+    .chat-message em {
+      font-style: italic;
+      opacity: 0.8;
+    }
+    
+    .chat-list {
+      margin: 0.5rem 0;
+      padding-left: 1.2rem;
+    }
+    
+    .chat-list li {
+      margin: 0.3rem 0;
+      position: relative;
+    }
+    
+    .chat-list li::before {
+      content: "•";
+      position: absolute;
+      left: -1rem;
+      color: #FF7A00;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 0.1rem;
+    }
+
+    .mentor-card {
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .mentor-card:hover {
+      transform: translateY(-2px);
+      border-color: #FF7A00;
+      box-shadow: 0 8px 25px rgba(255, 122, 0, 0.15);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   </style>
 </head>
 
 <body class="bg-background-light dark:bg-background-dark font-display">
 
   <!-- Header -->
-  <header
-    class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
     <div class="container mx-auto px-6 py-4">
       <div class="flex justify-between items-center">
         <div class="flex items-center">
@@ -58,37 +180,24 @@
           <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Dashboard</span>
         </div>
         <nav class="hidden md:flex space-x-8">
-          <a href="./dashboard.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Dashboard</a>
-          <a href="../pages/areasMentorias.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
-          <a href="../pages/mentores.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
-          <a href="../pages/mentoria.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
-          <a href="../pages/perfil.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
-          <a href="../pages/config.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Configurações</a>
+          <a href="./dashboard.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Dashboard</a>
+          <a href="../pages/areasMentorias.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Áreas</a>
+          <a href="../pages/mentores.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentores</a>
+          <a href="../pages/mentoria.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
+          <a href="../pages/perfil.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
+          <a href="../pages/config.html" class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Configurações</a>
         </nav>
         <div class="flex items-center space-x-4">
-          <button id="theme-toggle"
-            class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
+          <button id="theme-toggle" class="p-2 rounded-full bg-slate-100 dark:bg-[#333333] text-text-main dark:text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path id="theme-icon" fill-rule="evenodd"
-                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                clip-rule="evenodd" />
+              <path id="theme-icon" fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
             </svg>
           </button>
           <div class="flex items-center space-x-3">
-            <div
-              class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm"
-              id="user-avatar">U</div>
-            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block"
-              id="user-name">Usuário</span>
+            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm" id="user-avatar">U</div>
+            <span class="text-sm font-medium text-text-main dark:text-white hidden md:block" id="user-name">Usuário</span>
           </div>
-          <button id="logout-btn"
-            class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
+          <button id="logout-btn" class="px-4 py-2 text-sm font-medium text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">Sair</button>
         </div>
       </div>
     </div>
@@ -103,35 +212,160 @@
   </div>
 
   <main id="dashboard-content" class="container mx-auto px-6 py-8 hidden">
-    <!-- Dashboard content aqui -->
-    <h1 id="dashboard-title" class="text-3xl font-bold text-text-main dark:text-white">Bem-vindo ao Dashboard</h1>
-    <p id="dashboard-subtitle" class="text-slate-600 dark:text-slate-300 mt-2">Gerencie suas mentorias e acompanhe seu
-      progresso</p>
+    <!-- Seção de Boas-vindas e IA Mentor -->
+    <div class="mb-8">
+      <h1 id="dashboard-title" class="text-3xl font-bold text-text-main dark:text-white">Bem-vindo ao Dashboard</h1>
+      <p id="dashboard-subtitle" class="text-slate-600 dark:text-slate-300 mt-2">Gerencie suas mentorias e acompanhe seu progresso</p>
+    </div>
 
-    <!-- Conteúdo do Dashboard -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Cards de Métricas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-text-main dark:text-white">Mentorias Ativas</h3>
-        <p class="text-2xl font-bold text-primary mt-2" id="active-mentorships">0</p>
+        <p class="text-2xl font-bold text-primary mt-2" id="active-mentorships">3</p>
       </div>
       <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-text-main dark:text-white">Sessões Concluídas</h3>
-        <p class="text-2xl font-bold text-success mt-2" id="completed-sessions">0</p>
+        <p class="text-2xl font-bold text-success mt-2" id="completed-sessions">12</p>
       </div>
       <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-text-main dark:text-white">Próxima Sessão</h3>
-        <p class="text-lg font-medium text-text-main dark:text-white mt-2" id="next-session">-</p>
+        <p class="text-lg font-medium text-text-main dark:text-white mt-2" id="next-session">Amanhã, 14:00</p>
       </div>
       <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
         <h3 class="text-lg font-semibold text-text-main dark:text-white">Progresso Total</h3>
-        <p class="text-2xl font-bold text-primary mt-2" id="total-progress">0%</p>
+        <p class="text-2xl font-bold text-primary mt-2" id="total-progress">65%</p>
+      </div>
+    </div>
+
+    <!-- Conteúdo adicional do dashboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Próximas Mentorias -->
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-text-main dark:text-white">Próximas Mentorias</h3>
+          <span class="text-sm text-primary font-medium">3 agendadas</span>
+        </div>
+        <div id="upcoming-mentorships" class="space-y-4">
+          <!-- Conteúdo dinâmico será carregado aqui -->
+        </div>
+      </div>
+
+      <!-- Progresso Recente -->
+      <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-text-main dark:text-white mb-4">Progresso Recente</h3>
+        <div id="recent-progress" class="space-y-3">
+          <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div>
+              <p class="font-medium text-text-main dark:text-white">Finanças Pessoais</p>
+              <p class="text-sm text-text-secondary dark:text-text-secondary-dark">Completado: 8 de 12 módulos</p>
+            </div>
+            <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="bg-success h-2 rounded-full" style="width: 67%"></div>
+            </div>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div>
+              <p class="font-medium text-text-main dark:text-white">Investimentos</p>
+              <p class="text-sm text-text-secondary dark:text-text-secondary-dark">Completado: 5 de 10 módulos</p>
+            </div>
+            <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="bg-primary h-2 rounded-full" style="width: 50%"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
 
-  <script src="../js/auth.js"></script>
-<script src="../js/dashboard.js"></script>
+  <!-- Modal do Assistente FIN -->
+  <div id="mentor-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="modal-backdrop"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[80vh] bg-white dark:bg-[#333333] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+      <!-- Header do Modal -->
+      <div class="border-b border-slate-200 dark:border-slate-700 p-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </span>
+            <div>
+              <h2 class="text-xl font-bold">IA Mentor FIN</h2>
+              <p class="text-white/80 text-sm">Seu Guia de Onboarding Inteligente</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="reset-chat" class="p-2 hover:bg-white/20 rounded-full transition-colors text-sm" title="Reiniciar conversa">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+            </button>
+            <button id="close-modal" class="p-2 hover:bg-white/20 rounded-full transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Container do Chat -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Área de Conversação -->
+        <main class="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar" id="conversation-area">
+          <!-- Mensagens serão carregadas aqui dinamicamente -->
+        </main>
+        
+        <!-- Indicador de Digitação (inicialmente oculto) -->
+        <div id="typing-indicator" class="hidden">
+          <div class="flex items-end gap-3 px-4 py-2">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 h-8 shrink-0 flex items-center justify-center bg-primary/20">
+              <span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-1 items-start">
+              <div class="text-base font-normal leading-relaxed flex items-center space-x-1 max-w-xs rounded-lg rounded-bl-none px-4 py-3 bg-surface-light dark:bg-surface-dark text-text-main dark:text-text-main-dark shadow-sm">
+                <span class="typing-dot w-2 h-2 bg-text-secondary/50 dark:bg-text-secondary-dark/50 rounded-full"></span>
+                <span class="typing-dot w-2 h-2 bg-text-secondary/50 dark:bg-text-secondary-dark/50 rounded-full"></span>
+                <span class="typing-dot w-2 h-2 bg-text-secondary/50 dark:bg-text-secondary-dark/50 rounded-full"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Área de Entrada -->
+        <footer class="flex shrink-0 items-center gap-2 border-t border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark p-4">
+          <div class="relative flex-1">
+            <input 
+              id="message-input"
+              class="w-full h-12 rounded-full border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 pl-4 pr-12 text-text-main dark:text-text-main-dark focus:border-primary focus:ring-primary focus:ring-2 placeholder:text-text-secondary dark:placeholder:text-text-secondary-dark" 
+              placeholder="Digite sua mensagem..." 
+              type="text"
+              aria-label="Digite sua mensagem"
+              maxlength="2000"
+            />
+          </div>
+          <button 
+            id="send-button"
+            class="flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full bg-primary text-white text-2xl font-bold leading-normal hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Enviar mensagem"
+            disabled
+          >
+            <span class="material-symbols-outlined">send</span>
+          </button>
+        </footer>
+      </div>
+    </div>
+  </div>
 
+  <!-- Botão flutuante para abrir o modal -->
+  <button id="open-mentor-modal" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-40">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+    </svg>
+  </button>
+
+ <script src="../js/dashboard.js"></script>
 </body>
-
 </html>

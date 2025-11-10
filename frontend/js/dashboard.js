@@ -1,73 +1,133 @@
-// frontend/js/dashboard.js - VERSÃO CORRIGIDA
-class Dashboard {
+// 🔥 SISTEMA DE AUTENTICAÇÃO
+class AuthService {
   constructor() {
-    this.authService = authService;
-    this.currentUser = this.getUserData();
-    this.userData = null;
-    this.init();
+    this.API_BASE_URL = 'http://localhost:5000/api';
+    this.currentUser = null;
   }
 
-  // ✅ MÉTODO CORRIGIDO - NÃO SOBREESCREVE A ROLE DO BANCO
-  getUserData() {
-    console.log('👤 Buscando dados do usuário...');
-    
-    // Método 1: Usar authService
-    let user = this.authService.getCurrentUser();
-    console.log('Usuário do authService:', user);
-    
-    // Método 2: Buscar diretamente do localStorage se necessário
-    if (!user || typeof user !== 'object') {
-      console.log('🔄 Buscando usuário diretamente do localStorage...');
-      try {
-        const userStr = localStorage.getItem('fin_user');
-        if (userStr) {
-          user = JSON.parse(userStr);
-          console.log('Usuário do localStorage:', user);
+  async getProfile() {
+    try {
+      const token = this.getToken();
+      if (!token) {
+        return { success: false, message: 'Token não encontrado' };
+      }
+
+      const response = await fetch(`${this.API_BASE_URL}/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-      } catch (error) {
-        console.error('Erro ao parsear usuário do localStorage:', error);
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        this.currentUser = data.data.user;
+        return { success: true, data: data.data };
+      } else if (response.status === 401) {
+        this.logout();
+        return { success: false, message: 'Token inválido' };
+      } else {
+        return { success: false, message: 'Erro ao carregar perfil' };
       }
+    } catch (error) {
+      console.error('❌ Erro na requisição de perfil:', error);
+      return { success: false, message: 'Erro de conexão' };
     }
-    
-    // ✅ CORREÇÃO: Tratar diferentes estruturas de resposta
-    if (user) {
-      // Caso 1: Estrutura {user: {...}}
-      if (user.user && typeof user.user === 'object') {
-        console.log('📦 Estrutura {user: {...}} detectada');
-        user = user.user;
+  }
+
+  getToken() {
+    return localStorage.getItem('fin_token');
+  }
+
+  logout() {
+    localStorage.removeItem('fin_token');
+    localStorage.removeItem('fin_user');
+    window.location.href = '../pages/login.html';
+  }
+
+  async createDemoUser() {
+    try {
+      console.log('👤 Tentando criar usuário demo...');
+      const demoEmail = `demo-${Date.now()}@fin.com`;
+
+      const response = await fetch(`${this.API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          firstName: 'Usuário',
+          lastName: 'Demo',
+          email: demoEmail,
+          password: 'demo123',
+          role: 'user'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('✅ Usuário demo criado com sucesso');
+        localStorage.setItem('fin_token', data.token);
+        localStorage.setItem('fin_user', JSON.stringify(data.user));
+        return data.token;
+      } else if (response.status === 409) {
+        console.log('🔄 Usuário demo já existe, tentando login...');
+        return await this.demoLogin();
+      } else {
+        console.log('❌ Erro ao criar usuário demo');
+        return null;
       }
-      // Caso 2: Estrutura {data: {user: {...}}} 
-      else if (user.data && user.data.user) {
-        console.log('📦 Estrutura {data: {user: {...}}} detectada');
-        user = user.data.user;
+    } catch (error) {
+      console.log('❌ Não foi possível criar usuário demo:', error);
+      return null;
+    }
+  }
+
+  async demoLogin() {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: 'demo@fin.com',
+          password: 'demo123'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('fin_token', data.token);
+        localStorage.setItem('fin_user', JSON.stringify(data.user));
+        return data.token;
       }
-      // Caso 3: Estrutura {data: {...}} (dados diretos)
-      else if (user.data && typeof user.data === 'object') {
-        console.log('📦 Estrutura {data: {...}} detectada');
-        user = user.data;
-      }
+    } catch (error) {
+      console.log('❌ Login demo falhou');
+      return null;
     }
-    
-    // ✅ CORREÇÃO: APENAS FALLBACK SE REALMENTE NÃO TEM USUÁRIO
-    // NÃO SOBREESCREVER A ROLE DO BANCO!
-    if (!user || typeof user !== 'object') {
-      console.log('❌ Nenhum usuário válido encontrado, usando padrão');
-      user = {
-        firstName: 'Usuário',
-        lastName: '',
-        email: 'usuario@exemplo.com',
-        role: 'mentee' // Apenas para fallback real
-      };
+  }
+
+  async validateToken(token) {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/auth/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
     }
-    
-    // ✅ CORREÇÃO: APENAS garantir firstName se não existir
-    // NÃO mexer na role que vem do banco!
-    if (!user.firstName) {
-      user.firstName = 'Usuário';
-    }
-    
-    console.log('✅ Usuário final para dashboard:', user);
-    return user;
+  }
+}
+
+// 🔥 CLASSE PRINCIPAL DO DASHBOARD
+class Dashboard {
+  constructor() {
+    this.authService = new AuthService();
+    this.currentUser = null;
+    this.userData = null;
+    this.init();
   }
 
   async init() {
@@ -75,7 +135,7 @@ class Dashboard {
       console.log('🚀 Iniciando dashboard...');
       this.showLoading(true);
 
-      // ✅ VERIFICAÇÃO DE AUTENTICAÇÃO COMPATÍVEL
+      // ✅ VERIFICAÇÃO DE AUTENTICAÇÃO
       const isAuthenticated = await this.checkAuth();
       console.log('🔐 Resultado da autenticação:', isAuthenticated);
 
@@ -85,20 +145,13 @@ class Dashboard {
         return;
       }
 
-      // ✅ VERIFICAÇÃO ADMIN ATUALIZADA
-      console.log('🔍 Verificando se é admin...');
-      if (this.isAdmin()) {
-        console.log('👑 Usuário é ADMIN, redirecionando para painel administrativo...');
-        window.location.href = '../admin/index.html';
-        return;
-      }
-
-      console.log('👤 Usuário é MENTEE, carregando dashboard normal...');
-      
-      // Carregar dados do dashboard
+      // ✅ CARREGAR DADOS DO USUÁRIO
       await this.loadUserData();
       this.updateUI();
       this.setupEventListeners();
+
+      // ✅ INICIALIZAR MENTOR IA
+      this.initializeMentorBot();
 
       this.showLoading(false);
       this.showContent(true);
@@ -114,15 +167,7 @@ class Dashboard {
   async checkAuth() {
     console.log('🔐 Verificando autenticação...');
 
-    // Método 1: Usar authService
-    const isAuthenticated = this.authService.isAuthenticated();
-    console.log('AuthService.isAuthenticated():', isAuthenticated);
-
-    if (isAuthenticated) {
-      return true;
-    }
-
-    // Método 2: Verificação manual de fallback
+    // Verificar token no localStorage
     const token = localStorage.getItem('fin_token');
     console.log('Token no localStorage:', token ? 'EXISTE' : 'NÃO EXISTE');
 
@@ -131,61 +176,58 @@ class Dashboard {
       return false;
     }
 
-    // Verificar validade do token
-    const isValid = this.authService.isValidToken(token);
-    console.log('Token válido?:', isValid);
-
-    if (!isValid) {
-      console.log('❌ Token inválido');
-      this.authService.logout();
-      return false;
-    }
-
-    // Tentar buscar perfil atualizado para garantir dados corretos
+    // Tentar buscar perfil do usuário
     try {
-      console.log('🔄 Buscando perfil atualizado...');
-      const profile = await this.authService.getProfile();
+      console.log('🔄 Buscando perfil do usuário...');
+      const profile = await this.getUserProfile();
       console.log('Resposta do profile:', profile);
 
       if (profile.success) {
-        // Atualizar usuário com dados mais recentes
-        this.currentUser = this.getUserData(); // Recarregar dados
-        console.log('✅ Usuário atualizado após profile:', this.currentUser);
-        return true;
-      } else if (profile.offline) {
-        console.log('⚠️ Modo offline, continuando com dados locais');
+        this.currentUser = profile.data;
+        console.log('✅ Usuário autenticado:', this.currentUser);
         return true;
       } else {
-        console.log('⚠️ Profile falhou, mas token é válido. Continuando...');
-        return true;
+        console.log('❌ Falha ao carregar perfil:', profile.message);
+        return false;
       }
     } catch (error) {
-      console.error('⚠️ Erro ao buscar profile, mas continuando:', error);
-      return true; // Continua se o token for válido
+      console.error('⚠️ Erro ao buscar profile:', error);
+      return false;
     }
   }
 
-  // ✅ VERIFICAR SE É ADMIN - VERSÃO ROBUSTA
-  isAdmin() {
-    console.log('🔍 === VERIFICAÇÃO ADMIN INICIADA ===');
-    
-    const user = this.currentUser;
-    console.log('👤 Usuário atual:', user);
-    
-    if (!user) {
-      console.log('❌ Nenhum usuário para verificar');
-      return false;
+  async getUserProfile() {
+    try {
+      const token = localStorage.getItem('fin_token');
+      if (!token) {
+        return { success: false, message: 'Token não encontrado' };
+      }
+
+      const response = await fetch('http://localhost:5000/api/auth/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return { success: true, data: data.data.user };
+      } else if (response.status === 401) {
+        this.logout();
+        return { success: false, message: 'Token inválido' };
+      } else {
+        return { success: false, message: 'Erro ao carregar perfil' };
+      }
+    } catch (error) {
+      console.error('❌ Erro na requisição de perfil:', error);
+      return { success: false, message: 'Erro de conexão' };
     }
-    
-    // ✅ USAR A ROLE ORIGINAL DO BANCO (sem sobreescrita)
-    const userRole = user.role;
-    console.log('🎯 Role do usuário:', userRole);
-    
-    const isAdmin = userRole === 'admin' || userRole === 'administrator';
-    console.log('👑 É admin?:', isAdmin ? 'SIM' : 'NÃO');
-    console.log('🔚 === VERIFICAÇÃO ADMIN FINALIZADA ===');
-    
-    return isAdmin;
+  }
+
+  logout() {
+    localStorage.removeItem('fin_token');
+    localStorage.removeItem('fin_user');
+    window.location.href = '../pages/login.html';
   }
 
   redirectToLogin() {
@@ -216,19 +258,19 @@ class Dashboard {
 
   showError(message) {
     console.error('💥 Erro:', message);
-    
+
     // Criar elemento de erro temporário
     const errorDiv = document.createElement('div');
     errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 fade-in';
     errorDiv.innerHTML = `
-      <div class="flex items-center">
-        <span class="material-symbols-outlined mr-2">error</span>
-        <span>${message}</span>
-      </div>
-    `;
-    
+          <div class="flex items-center">
+            <span class="material-symbols-outlined mr-2">error</span>
+            <span>${message}</span>
+          </div>
+        `;
+
     document.body.appendChild(errorDiv);
-    
+
     // Remover após 5 segundos
     setTimeout(() => {
       if (errorDiv.parentNode) {
@@ -241,15 +283,47 @@ class Dashboard {
   async loadUserData() {
     try {
       console.log('📊 Carregando dados do usuário...');
-      
+
       // Simular dados - em produção viria da API
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       this.userData = {
         activeMentorships: 3,
         completedSessions: 12,
         nextSession: '30/10/2024 - 14:00',
-        totalProgress: '75%'
+        totalProgress: '75%',
+        upcomingMentorships: [
+          {
+            title: 'Mentoria de Investimentos',
+            date: '30/10/2024',
+            time: '14:00',
+            mentor: 'Carlos Silva'
+          },
+          {
+            title: 'Planejamento Financeiro',
+            date: '02/11/2024',
+            time: '10:00',
+            mentor: 'Ana Costa'
+          },
+          {
+            title: 'Análise de Portfólio',
+            date: '05/11/2024',
+            time: '16:30',
+            mentor: 'Roberto Alves'
+          }
+        ],
+        recentProgress: [
+          {
+            activity: 'Finanças Pessoais',
+            progress: '67%',
+            modules: '8 de 12 módulos'
+          },
+          {
+            activity: 'Investimentos',
+            progress: '50%',
+            modules: '5 de 10 módulos'
+          }
+        ]
       };
 
       console.log('✅ Dados carregados:', this.userData);
@@ -260,7 +334,9 @@ class Dashboard {
         activeMentorships: 0,
         completedSessions: 0,
         nextSession: '-',
-        totalProgress: '0%'
+        totalProgress: '0%',
+        upcomingMentorships: [],
+        recentProgress: []
       };
     }
   }
@@ -269,20 +345,22 @@ class Dashboard {
   updateUI() {
     console.log('🎨 Atualizando interface...');
     console.log('👤 Dados do usuário para UI:', this.currentUser);
-    
+
     this.updateUserInfo();
     this.updateStats();
+    this.updateUpcomingMentorships();
+    this.updateRecentProgress();
   }
 
   // ✅ ATUALIZAR INFORMAÇÕES DO USUÁRIO
   updateUserInfo() {
     const user = this.currentUser;
-    
+
     if (!user) {
       console.log('❌ Nenhum usuário para atualizar UI');
       return;
     }
-    
+
     console.log('👤 Atualizando informações do usuário:', user);
 
     // Nome do usuário no header
@@ -316,7 +394,7 @@ class Dashboard {
   // ✅ ATUALIZAR ESTATÍSTICAS
   updateStats() {
     console.log('📈 Atualizando estatísticas...');
-    
+
     if (!this.userData) {
       console.log('⚠️ userData não definido, usando padrão');
       this.userData = {
@@ -345,16 +423,90 @@ class Dashboard {
     });
   }
 
+  // ✅ ATUALIZAR MENTORIAS PROGRAMADAS
+  updateUpcomingMentorships() {
+    const container = document.getElementById('upcoming-mentorships');
+    if (!container || !this.userData.upcomingMentorships) return;
+
+    if (this.userData.upcomingMentorships.length === 0) {
+      container.innerHTML = `
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <span class="material-symbols-outlined text-4xl mb-2">event_available</span>
+              <p>Nenhuma mentoria agendada</p>
+              <button class="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-orange-600 transition-colors">
+                Agendar Mentoria
+              </button>
+            </div>
+          `;
+      return;
+    }
+
+    container.innerHTML = this.userData.upcomingMentorships.map(mentorship => `
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-800 dark:text-white">${mentorship.title}</h4>
+              <div class="flex items-center gap-4 mt-1 text-sm text-gray-600 dark:text-gray-300">
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">calendar_today</span>
+                  ${mentorship.date}
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">schedule</span>
+                  ${mentorship.time}
+                </span>
+                <span class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">person</span>
+                  ${mentorship.mentor}
+                </span>
+              </div>
+            </div>
+            <button class="ml-4 px-3 py-1 bg-primary text-white text-sm rounded-lg hover:bg-orange-600 transition-colors">
+              Entrar
+            </button>
+          </div>
+        `).join('');
+  }
+
+  // ✅ ATUALIZAR PROGRESSO RECENTE
+  updateRecentProgress() {
+    const container = document.getElementById('recent-progress');
+    if (!container || !this.userData.recentProgress) return;
+
+    if (this.userData.recentProgress.length === 0) {
+      container.innerHTML = `
+            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+              <span class="material-symbols-outlined text-4xl mb-2">trending_up</span>
+              <p>Nenhum progresso registrado</p>
+            </div>
+          `;
+      return;
+    }
+
+    container.innerHTML = this.userData.recentProgress.map(progress => `
+          <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+            <div>
+              <p class="font-medium text-text-main dark:text-white">${progress.activity}</p>
+              <p class="text-sm text-text-secondary dark:text-text-secondary-dark">${progress.modules}</p>
+            </div>
+            <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+              <div class="bg-primary h-2 rounded-full" style="width: ${progress.progress}"></div>
+            </div>
+          </div>
+        `).join('');
+  }
+
   // ✅ CONFIGURAR EVENT LISTENERS
   setupEventListeners() {
     console.log('🔗 Configurando event listeners...');
-    
+
     // Logout
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
         console.log('🚪 Logout solicitado');
-        this.authService.logout();
+        if (confirm('Tem certeza que deseja sair?')) {
+          this.logout();
+        }
       });
     }
 
@@ -364,12 +516,342 @@ class Dashboard {
       themeToggle.addEventListener('click', () => this.toggleTheme());
     }
 
-    // Listen para mudanças de autenticação
-    window.addEventListener('authChange', () => {
-      console.log('🔄 Evento authChange detectado, recarregando dados...');
-      this.currentUser = this.getUserData();
-      this.updateUserInfo();
+    // ✅ CONFIGURAR MODAL DO MENTOR IA
+    this.setupMentorModal();
+  }
+
+  // ✅ CONFIGURAR MODAL DO MENTOR IA
+  setupMentorModal() {
+    console.log('🔧 Configurando modal do mentor IA...');
+
+    const openButton = document.getElementById('open-mentor-modal');
+    const closeButton = document.getElementById('close-modal');
+    const modal = document.getElementById('mentor-modal');
+    const backdrop = document.getElementById('modal-backdrop');
+    const resetChat = document.getElementById('reset-chat');
+
+    if (openButton && modal) {
+      openButton.addEventListener('click', () => {
+        console.log('🎯 Abrindo modal do mentor IA');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        // Inicializar o chat se ainda não foi inicializado
+        this.initializeMentorChat();
+      });
+    }
+
+    if (closeButton) {
+      closeButton.addEventListener('click', () => this.closeMentorModal());
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', () => this.closeMentorModal());
+    }
+
+    if (resetChat) {
+      resetChat.addEventListener('click', () => {
+        this.resetChat();
+      });
+    }
+
+    // Fechar com ESC
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+        this.closeMentorModal();
+      }
     });
+
+    // Configurar input do chat
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+
+    if (messageInput && sendButton) {
+      messageInput.addEventListener('input', (e) => {
+        sendButton.disabled = !e.target.value.trim();
+      });
+
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !sendButton.disabled) {
+          this.sendChatMessage();
+        }
+      });
+
+      sendButton.addEventListener('click', () => {
+        this.sendChatMessage();
+      });
+    }
+  }
+
+  closeMentorModal() {
+    const modal = document.getElementById('mentor-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+  }
+
+  resetChat() {
+    const conversationArea = document.getElementById('conversation-area');
+    if (conversationArea) {
+      conversationArea.innerHTML = '';
+      this.showWelcomeMessage();
+    }
+  }
+
+  // ✅ INICIALIZAR MENTOR BOT
+  initializeMentorBot() {
+    console.log('🤖 Inicializando IA Mentor...');
+
+    // Verificar se o usuário é novo para destacar o mentor
+    const isNewUser = !localStorage.getItem('user_onboarding_complete');
+
+    if (isNewUser) {
+      // Mostrar prompt para novo usuário
+      setTimeout(() => {
+        this.showNewUserPrompt();
+      }, 2000);
+    }
+  }
+
+  // ✅ INICIALIZAR CHAT DO MENTOR
+  initializeMentorChat() {
+    console.log('💬 Inicializando chat do mentor...');
+
+    // Mostrar mensagem de boas-vindas se for a primeira vez
+    const conversationArea = document.getElementById('conversation-area');
+    if (conversationArea && conversationArea.children.length === 0) {
+      this.showWelcomeMessage();
+    }
+  }
+
+  // ✅ MENSAGEM DE BOAS-VINDAS DO CHAT
+  showWelcomeMessage() {
+    const conversationArea = document.getElementById('conversation-area');
+    if (!conversationArea) return;
+
+    const welcomeMessage = `
+          <div class="flex items-end gap-3">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 h-8 shrink-0 flex items-center justify-center bg-primary/20">
+              <span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-1 items-start">
+              <div class="text-base font-normal leading-relaxed max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg rounded-bl-none px-4 py-3 bg-surface-light dark:bg-surface-dark text-text-main dark:text-text-main-dark shadow-sm message-animation">
+                <p class="chat-message">Olá! 👋 Eu sou o <strong>FIN</strong>, seu mentor de onboarding inteligente!</p>
+                <p class="chat-message mt-2">Estou aqui para te conhecer melhor e te guiar para o caminho ideal de crescimento. Posso te ajudar com:</p>
+                <ul class="chat-list">
+                  <li>🎯 <strong>Definição de metas</strong> financeiras</li>
+                  <li>📚 <strong>Recomendações</strong> de conteúdo</li>
+                  <li>👥 <strong>Conexão</strong> com mentores especializados</li>
+                  <li>📊 <strong>Acompanhamento</strong> do seu progresso</li>
+                </ul>
+                <p class="chat-message mt-2">Por onde você gostaria de começar? 😊</p>
+              </div>
+              <span class="text-xs text-text-secondary dark:text-text-secondary-dark">Agora</span>
+            </div>
+          </div>
+        `;
+
+    conversationArea.innerHTML = welcomeMessage;
+    conversationArea.scrollTop = conversationArea.scrollHeight;
+  }
+
+  // ✅ ENVIAR MENSAGEM NO CHAT
+  async sendChatMessage() {
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const conversationArea = document.getElementById('conversation-area');
+
+    if (!messageInput || !sendButton || !conversationArea) return;
+
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    // Adicionar mensagem do usuário
+    const userMessage = `
+          <div class="flex items-end gap-3 justify-end">
+            <div class="flex flex-1 flex-col gap-1 items-end">
+              <div class="text-base font-normal leading-relaxed max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg rounded-br-none px-4 py-3 bg-primary text-white shadow-sm message-animation">
+                <p class="chat-message">${this.escapeHtml(message)}</p>
+              </div>
+              <span class="text-xs text-text-secondary dark:text-text-secondary-dark">Agora</span>
+            </div>
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 h-8 shrink-0 flex items-center justify-center bg-primary text-white font-bold text-sm">
+              ${this.getUserInitials()}
+            </div>
+          </div>
+        `;
+
+    conversationArea.innerHTML += userMessage;
+    messageInput.value = '';
+    sendButton.disabled = true;
+    conversationArea.scrollTop = conversationArea.scrollHeight;
+
+    // Mostrar indicador de digitação
+    this.showTypingIndicator();
+
+    // Simular resposta do bot (em produção, integrar com API)
+    setTimeout(() => {
+      this.hideTypingIndicator();
+      this.showBotResponse(message);
+    }, 1500);
+  }
+
+  // ✅ ESCAPAR HTML PARA SEGURANÇA
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // ✅ OBTER INICIAIS DO USUÁRIO
+  getUserInitials() {
+    if (!this.currentUser) return 'U';
+    const first = this.currentUser.firstName ? this.currentUser.firstName[0] : 'U';
+    const last = this.currentUser.lastName ? this.currentUser.lastName[0] : '';
+    return (first + last).toUpperCase();
+  }
+
+  // ✅ MOSTRAR INDICADOR DE DIGITAÇÃO
+  showTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.classList.remove('hidden');
+      const conversationArea = document.getElementById('conversation-area');
+      if (conversationArea) {
+        conversationArea.scrollTop = conversationArea.scrollHeight;
+      }
+    }
+  }
+
+  // ✅ OCULTAR INDICADOR DE DIGITAÇÃO
+  hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+      typingIndicator.classList.add('hidden');
+    }
+  }
+
+  // ✅ MOSTRAR RESPOSTA DO BOT
+  showBotResponse(userMessage) {
+    const conversationArea = document.getElementById('conversation-area');
+    if (!conversationArea) return;
+
+    // Resposta simples baseada na mensagem do usuário
+    let response = this.generateBotResponse(userMessage);
+
+    const botMessage = `
+          <div class="flex items-end gap-3">
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-8 h-8 shrink-0 flex items-center justify-center bg-primary/20">
+              <span class="material-symbols-outlined text-primary text-xl">smart_toy</span>
+            </div>
+            <div class="flex flex-1 flex-col gap-1 items-start">
+              <div class="text-base font-normal leading-relaxed max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg rounded-bl-none px-4 py-3 bg-surface-light dark:bg-surface-dark text-text-main dark:text-text-main-dark shadow-sm message-animation">
+                ${response}
+              </div>
+              <span class="text-xs text-text-secondary dark:text-text-secondary-dark">Agora</span>
+            </div>
+          </div>
+        `;
+
+    conversationArea.innerHTML += botMessage;
+    conversationArea.scrollTop = conversationArea.scrollHeight;
+  }
+
+  // ✅ GERAR RESPOSTA DO BOT
+  generateBotResponse(userMessage) {
+    const lowerMessage = userMessage.toLowerCase();
+
+    if (lowerMessage.includes('oi') || lowerMessage.includes('olá') || lowerMessage.includes('ola')) {
+      return `
+            <p class="chat-message">Olá! Que bom te ver por aqui! 😊</p>
+            <p class="chat-message mt-2">Como posso te ajudar hoje em sua jornada financeira?</p>
+          `;
+    } else if (lowerMessage.includes('meta') || lowerMessage.includes('objetivo')) {
+      return `
+            <p class="chat-message">Excelente! Definir metas é o primeiro passo para o sucesso financeiro! 🎯</p>
+            <p class="chat-message mt-2">Vamos trabalhar juntos para estabelecer metas claras e alcançáveis. Você pode:</p>
+            <ul class="chat-list">
+              <li>📝 <strong>Definir</strong> metas de curto, médio e longo prazo</li>
+              <li>💰 <strong>Estabelecer</strong> prazos realistas</li>
+              <li>📊 <strong>Acompanhar</strong> seu progresso regularmente</li>
+            </ul>
+            <p class="chat-message mt-2">Qual área você gostaria de focar primeiro?</p>
+          `;
+    } else if (lowerMessage.includes('mentor') || lowerMessage.includes('especialista')) {
+      return `
+            <p class="chat-message">Temos mentores incríveis para te ajudar! 👥</p>
+            <p class="chat-message mt-2">Nossa rede inclui especialistas em:</p>
+            <ul class="chat-list">
+              <li>💼 <strong>Investimentos</strong> e mercado financeiro</li>
+              <li>🏠 <strong>Planejamento</strong> patrimonial</li>
+              <li>📈 <strong>Educação</strong> financeira</li>
+              <li>🛡️ <strong>Previdência</strong> privada</li>
+            </ul>
+            <p class="chat-message mt-2">Gostaria que eu recomende algum mentor específico?</p>
+          `;
+    } else {
+      return `
+            <p class="chat-message">Obrigado pela sua mensagem! 🤔</p>
+            <p class="chat-message mt-2">Posso te ajudar com:</p>
+            <ul class="chat-list">
+              <li>🎯 <strong>Definição</strong> de metas financeiras</li>
+              <li>📚 <strong>Recomendações</strong> de conteúdo personalizado</li>
+              <li>👥 <strong>Conexão</strong> com mentores especializados</li>
+              <li>📊 <strong>Acompanhamento</strong> do seu progresso</li>
+            </ul>
+            <p class="chat-message mt-2">Por qual desses você tem interesse?</p>
+          `;
+    }
+  }
+
+  // ✅ PROMPT PARA NOVO USUÁRIO
+  showNewUserPrompt() {
+    const prompt = document.createElement('div');
+    prompt.className = 'fixed bottom-20 right-6 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 max-w-sm z-50 border border-gray-200 dark:border-gray-700';
+    prompt.style.animation = 'fadeInUp 0.3s ease-out';
+    prompt.innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-800 dark:text-white">Conheça o FIN Mentor</h4>
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">Seu assistente IA para te guiar na plataforma</p>
+              <div class="flex gap-2 mt-3">
+                <button id="try-mentor" class="flex-1 bg-primary text-white text-sm py-2 px-3 rounded-lg hover:bg-orange-600 transition-colors">
+                  Experimentar
+                </button>
+                <button id="dismiss-mentor" class="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm py-2 px-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                  Depois
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+    document.body.appendChild(prompt);
+
+    // Event listeners para os botões
+    document.getElementById('try-mentor').addEventListener('click', () => {
+      document.getElementById('open-mentor-modal').click();
+      prompt.remove();
+      localStorage.setItem('user_onboarding_complete', 'true');
+    });
+
+    document.getElementById('dismiss-mentor').addEventListener('click', () => {
+      prompt.remove();
+      localStorage.setItem('user_onboarding_complete', 'true');
+    });
+
+    // Auto-remover após 10 segundos
+    setTimeout(() => {
+      if (prompt.parentNode) {
+        prompt.remove();
+      }
+    }, 10000);
   }
 
   // ✅ ALTERNAR TEMA
@@ -388,17 +870,17 @@ class Dashboard {
 // ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ DOM carregado, iniciando dashboard...');
+
+  // Inicializar dashboard
   new Dashboard();
 });
 
 // ✅ TEMA INICIAL
-if (localStorage.getItem('theme') === 'dark' || 
-    (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+if (localStorage.getItem('theme') === 'dark' ||
+  (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
   document.documentElement.classList.add('dark');
   localStorage.setItem('theme', 'dark');
 } else {
   document.documentElement.classList.remove('dark');
   localStorage.setItem('theme', 'light');
 }
-
-console.log('✅ Dashboard.js carregado');

@@ -223,7 +223,7 @@ exports.listUsers = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { firstName, lastName, phone, bio } = req.body;
-    const userId = req.userId;
+    const userId = req.user.id;
 
     console.log('🔄 Atualizando perfil para userId:', userId);
 
