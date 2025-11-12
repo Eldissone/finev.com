@@ -251,7 +251,7 @@
   <script>
     class MentoriasPage {
       constructor() {
-        this.authService = authService;
+        this.authService = new AuthService();
         this.currentUser = null;
         this.mentoriasData = null;
         this.currentFilter = 'all';
@@ -414,10 +414,8 @@
       updateUI() {
         if (!this.currentUser) return;
 
-        // Atualizar header
-        const userInitials = (this.currentUser.firstName?.[0] || 'U') + (this.currentUser.lastName?.[0] || '');
-        document.getElementById('header-avatar').textContent = userInitials;
-        document.getElementById('header-name').textContent = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
+        // Atualizar header com sistema de avatar
+        this.updateUserInfo();
 
         // Atualizar estatísticas
         this.updateStats();
@@ -433,6 +431,119 @@
 
         // Atualizar próxima sessão
         this.updateNextSession();
+      }
+
+      // ✅ SISTEMA DE AVATAR ATUALIZADO (MESMO PADRÃO DAS OUTRAS PÁGINAS)
+      updateUserInfo() {
+        const user = this.currentUser;
+
+        if (!user) {
+          console.log('❌ Nenhum usuário para atualizar UI');
+          return;
+        }
+
+        console.log('👤 Atualizando informações do usuário:', user);
+
+        // Nome do usuário no header
+        const userNameElement = document.getElementById('header-name');
+        if (userNameElement) {
+          const firstName = user.firstName || user.name || 'Usuário';
+          const lastName = user.lastName || '';
+          const userName = `${firstName} ${lastName}`.trim();
+          userNameElement.textContent = userName;
+          console.log('✅ Nome no header:', userName);
+        }
+
+        // Avatar do usuário
+        const userAvatarElement = document.getElementById('header-avatar');
+        if (userAvatarElement) {
+          this.updateAvatar(user.avatarUrl, user);
+          console.log('✅ Avatar atualizado');
+        }
+      }
+
+      // ✅ SISTEMA DE AVATAR COMPLETO
+      updateAvatar(avatarUrl, user) {
+        const avatarElement = document.getElementById('header-avatar');
+        if (!avatarElement) return;
+
+        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+
+        console.log('🖼️ Atualizando avatar no header...');
+        console.log('📁 Avatar URL recebida:', avatarUrl);
+
+        // PRIORIDADE 1: Base64 salvo localmente
+        const base64Avatar = localStorage.getItem('user_avatar_base64');
+        if (base64Avatar) {
+          console.log('🖼️ Usando avatar base64 local no header');
+          avatarElement.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          return;
+        }
+
+        // PRIORIDADE 2: URL do servidor (COM CORREÇÃO DA URL)
+        if (avatarUrl) {
+          console.log('🖼️ Tentando avatar do servidor no header:', avatarUrl);
+
+          // CORREÇÃO: Verificar se é uma URL completa ou relativa
+          let fullAvatarUrl;
+
+          if (avatarUrl.startsWith('http')) {
+            // Já é uma URL completa
+            fullAvatarUrl = avatarUrl;
+          } else if (avatarUrl.startsWith('/uploads/')) {
+            // URL relativa do servidor - ajustar para o backend
+            fullAvatarUrl = `http://localhost:5000${avatarUrl}`;
+          } else if (avatarUrl.startsWith('uploads/')) {
+            // URL relativa sem a barra
+            fullAvatarUrl = `http://localhost:5000/${avatarUrl}`;
+          } else {
+            // Outro formato - tentar como está
+            fullAvatarUrl = `http://localhost:5000/uploads/avatars/${avatarUrl}`;
+          }
+
+          console.log('🔗 URL final do avatar:', fullAvatarUrl);
+
+          const testImage = new Image();
+          testImage.onload = () => {
+            console.log('✅ Imagem do servidor carregou com sucesso no header');
+            avatarElement.innerHTML = `<img src="${fullAvatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          };
+
+          testImage.onerror = () => {
+            console.log('❌ Imagem do servidor falhou no header, usando iniciais');
+            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+          };
+
+          testImage.src = `${fullAvatarUrl}?t=${Date.now()}`;
+
+          setTimeout(() => {
+            if (!testImage.complete) {
+              console.log('⏰ Timeout - imagem não carregou a tempo no header');
+              avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+            }
+          }, 3000);
+          return;
+        }
+
+        // PRIORIDADE 3: Avatar URL salvo localmente
+        const localAvatar = localStorage.getItem('user_avatar');
+        if (localAvatar) {
+          console.log('🖼️ Usando avatar URL local no header:', localAvatar);
+
+          const testImage = new Image();
+          testImage.onload = () => {
+            avatarElement.innerHTML = `<img src="${localAvatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          };
+          testImage.onerror = () => {
+            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+          };
+          testImage.src = `${localAvatar}?t=${Date.now()}`;
+          return;
+        }
+
+        // FALLBACK FINAL: Iniciais
+        console.log('🖼️ Nenhum avatar disponível no header, usando iniciais');
+        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
       }
 
       updateStats() {
@@ -647,17 +758,37 @@
           localStorage.setItem('theme', 'dark');
         }
       }
+
+      showError(message) {
+        console.error('💥 Erro:', message);
+        // Implementar exibição de erro
+      }
     }
 
     // Inicializar quando DOM estiver pronto
     document.addEventListener('DOMContentLoaded', () => {
+      console.log('✅ DOM carregado, iniciando página de mentorias...');
       new MentoriasPage();
+
+      testProfileAPI()
     });
 
     // Tema inicial
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
     }
+
+    // Debug helper
+    window.debugUser = () => {
+      console.log('🔍 DEBUG USER DATA:');
+      console.log('currentUser:', window.mentoriasPage?.currentUser);
+      console.log('localStorage fin_user:', localStorage.getItem('fin_user'));
+      console.log('localStorage fin_token:', localStorage.getItem('fin_token'));
+      console.log('localStorage user_avatar_base64:', localStorage.getItem('user_avatar_base64') ? 'EXISTS' : 'NOT EXISTS');
+    };
   </script>
 </body>
 

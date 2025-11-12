@@ -274,7 +274,6 @@
       </div>
     </div>
   </main>
-
   <script src="../js/auth.js"></script>
   <script>
     class ProfilePage {
@@ -282,6 +281,7 @@
         this.authService = authService;
         this.currentUser = null;
         this.userData = null;
+        this.API_BASE = 'http://localhost:5000/api';
         this.init();
       }
 
@@ -299,7 +299,7 @@
             return;
           }
 
-          // Carregar dados do usuário
+          // Carregar dados do usuário - usar rota que existe
           await this.loadUserData();
 
           // Atualizar UI
@@ -326,7 +326,7 @@
           return false;
         }
 
-        // Verificar com o backend
+        // Verificar com o backend - usar authService que já funciona
         const profile = await this.authService.getProfile();
         if (!profile.success) {
           console.log('❌ Perfil não carregado:', profile.message);
@@ -339,97 +339,258 @@
 
       async loadUserData() {
         try {
-          // Dados mock - em produção viriam da API
-          this.userData = {
-            mentorships: 3,
-            sessions: 12,
-            progress: 75,
-            rating: 4.8,
-            joinedDate: '2024-01-15',
-            activeMentorships: [
-              {
-                id: 1,
-                mentor: 'Carlos Mendes',
-                topic: 'Análise de Investimentos',
-                progress: 60,
-                nextSession: '30/10/2024 - 14:00'
-              },
-              {
-                id: 2,
-                mentor: 'Ana Silva',
-                topic: 'Gestão de Carteiras',
-                progress: 40,
-                nextSession: '02/11/2024 - 10:00'
-              }
-            ],
-            upcomingSessions: [
-              {
-                id: 1,
-                mentor: 'Carlos Mendes',
-                topic: 'Análise de Investimentos',
-                date: '30/10/2024',
-                time: '14:00',
-                type: 'video'
-              },
-              {
-                id: 2,
-                mentor: 'Ana Silva',
-                topic: 'Gestão de Carteiras',
-                date: '02/11/2024',
-                time: '10:00',
-                type: 'presencial'
-              }
-            ]
-          };
+          // USAR A ROTA QUE EXISTE: /api/auth/profile através do authService
+          const profile = await this.authService.getProfile();
+
+          if (profile.success) {
+            this.userData = {
+              user: profile.data.user,
+              stats: await this.loadUserStats(),
+              activeMentorships: await this.loadActiveMentorships(),
+              upcomingSessions: await this.loadUpcomingSessions()
+            };
+            console.log('✅ Dados do perfil carregados via authService:', this.userData);
+          } else {
+            throw new Error('Erro ao carregar dados do perfil');
+          }
 
         } catch (error) {
-          console.error('❌ Erro ao carregar dados:', error);
-          throw error;
+          console.error('❌ Erro ao carregar dados da API:', error);
+          // Fallback para dados mock baseado no usuário atual
+          await this.loadMockData();
         }
       }
 
+      async loadUserStats() {
+        // Se tiver uma rota específica para stats, implementar aqui
+        // Por enquanto, usar dados mock
+        return {
+          mentorships: 3,
+          sessions: 12,
+          progress: 75,
+          rating: 4.8
+        };
+      }
+
+      async loadActiveMentorships() {
+        // Implementar quando tiver rota para mentorias
+        return [];
+      }
+
+      async loadUpcomingSessions() {
+        // Implementar quando tiver rota para sessões
+        return [];
+      }
+
+      async loadMockData() {
+        console.log('🔄 Carregando dados mock...');
+        this.userData = {
+          user: this.currentUser,
+          stats: {
+            mentorships: 3,
+            sessions: 12,
+            progress: 75,
+            rating: 4.8
+          },
+          activeMentorships: [
+            {
+              id: 1,
+              title: 'Análise de Investimentos',
+              progress: 60,
+              nextSession: '30/10/2024 - 14:00',
+              mentor: 'Carlos Mendes',
+              mentorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+            }
+          ],
+          upcomingSessions: [
+            {
+              id: 1,
+              title: 'Análise de Investimentos',
+              date: '30/10/2024',
+              time: '14:00',
+              type: 'video',
+              mentor: 'Carlos Mendes',
+              mentorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+            }
+          ]
+        };
+      }
+
       updateUI() {
-        if (!this.currentUser) return;
+        if (!this.userData) return;
+
+        const user = this.userData.user;
+        const stats = this.userData.stats;
+
+        console.log('🎨 Atualizando UI com dados:', user);
 
         // Atualizar informações básicas
-        const userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
-        const userInitials = (this.currentUser.firstName?.[0] || 'U') + (this.currentUser.lastName?.[0] || '');
+        const userName = `${user.firstName} ${user.lastName}`;
+        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
 
         document.getElementById('profile-name').textContent = userName;
-        document.getElementById('profile-email').textContent = this.currentUser.email;
+        document.getElementById('profile-email').textContent = user.email;
         document.getElementById('avatar-initials').textContent = userInitials;
         document.getElementById('header-avatar').textContent = userInitials;
         document.getElementById('header-name').textContent = userName;
 
+        // Atualizar avatar se existir
+        this.updateAvatar(user.avatarUrl);
+
         // Formatar data de entrada
-        const joinedDate = new Date(this.currentUser.createdAt || this.userData.joinedDate);
+        const joinedDate = new Date(user.createdAt || new Date());
         document.getElementById('joined-date').textContent = joinedDate.toLocaleDateString('pt-BR');
 
         // Atualizar estatísticas
-        document.getElementById('mentorships-count').textContent = this.userData.mentorships;
-        document.getElementById('sessions-count').textContent = this.userData.sessions;
-        document.getElementById('progress-percent').textContent = `${this.userData.progress}%`;
-        document.getElementById('rating').textContent = this.userData.rating;
+        document.getElementById('mentorships-count').textContent = stats.mentorships;
+        document.getElementById('sessions-count').textContent = stats.sessions;
+        document.getElementById('progress-percent').textContent = `${stats.progress}%`;
+        document.getElementById('rating').textContent = stats.rating.toFixed(1);
 
         // Atualizar mentorias ativas
         this.updateActiveMentorships();
 
         // Atualizar próximas sessões
         this.updateUpcomingSessions();
+
+        // Atualizar informações da conta baseado no role
+        this.updateAccountInfo();
+      }
+
+      updateAvatar(avatarUrl) {
+        const avatarElement = document.getElementById('profile-avatar');
+        const headerAvatarElement = document.getElementById('header-avatar');
+
+        console.log('🖼️ Atualizando avatar...');
+
+        // PRIORIDADE 1: Base64 salvo localmente
+        const base64Avatar = localStorage.getItem('user_avatar_base64');
+        if (base64Avatar) {
+          console.log('🖼️ Usando avatar base64 local');
+          this.updateAvatarFromBase64(base64Avatar);
+          return;
+        }
+
+        // PRIORIDADE 2: URL do servidor (com fallback robusto)
+        if (avatarUrl) {
+          console.log('🖼️ Tentando avatar do servidor:', avatarUrl);
+          
+          // Criar uma imagem de teste para verificar se carrega
+          const testImage = new Image();
+          testImage.onload = () => {
+            console.log('✅ Imagem do servidor carregou com sucesso');
+            this.applyAvatar(avatarElement, headerAvatarElement, avatarUrl);
+          };
+          
+          testImage.onerror = () => {
+            console.log('❌ Imagem do servidor falhou, usando iniciais');
+            this.applyInitials(avatarElement, headerAvatarElement);
+          };
+          
+          // Corrigir URL se necessário
+          const fullAvatarUrl = avatarUrl.startsWith('http') ? avatarUrl : `${this.API_BASE}${avatarUrl}`;
+          testImage.src = `${fullAvatarUrl}?t=${Date.now()}`; // Adicionar timestamp para evitar cache
+          
+          // Timeout para fallback
+          setTimeout(() => {
+            if (!testImage.complete) {
+              console.log('⏰ Timeout - imagem não carregou a tempo');
+              this.applyInitials(avatarElement, headerAvatarElement);
+            }
+          }, 3000);
+          
+          return;
+        }
+
+        // PRIORIDADE 3: Avatar URL salvo localmente (fallback antigo)
+        const localAvatar = localStorage.getItem('user_avatar');
+        if (localAvatar && localAvatar.startsWith('http')) {
+          console.log('🖼️ Usando avatar URL local:', localAvatar);
+          
+          const testImage = new Image();
+          testImage.onload = () => {
+            this.applyAvatar(avatarElement, headerAvatarElement, localAvatar);
+          };
+          testImage.onerror = () => {
+            this.applyInitials(avatarElement, headerAvatarElement);
+          };
+          testImage.src = `${localAvatar}?t=${Date.now()}`;
+          
+          return;
+        }
+
+        // FALLBACK FINAL: Iniciais
+        console.log('🖼️ Nenhum avatar disponível, usando iniciais');
+        this.applyInitials(avatarElement, headerAvatarElement);
+      }
+
+      applyAvatar(avatarElement, headerAvatarElement, avatarUrl) {
+        avatarElement.innerHTML = `
+          <img src="${avatarUrl}" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-lg" 
+               onerror="this.style.display='none'; setTimeout(() => { profilePage.applyInitials(profilePage.getAvatarElement(), profilePage.getHeaderAvatarElement()) }, 100)">
+          <div class="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors" onclick="profilePage.openAvatarOptions()">
+            <span class="material-symbols-outlined text-white text-sm">edit</span>
+          </div>
+        `;
+
+        headerAvatarElement.innerHTML = `
+          <img src="${avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover" 
+               onerror="this.style.display='none'; setTimeout(() => { profilePage.applyInitials(profilePage.getAvatarElement(), profilePage.getHeaderAvatarElement()) }, 100)">
+        `;
+      }
+
+      applyInitials(avatarElement, headerAvatarElement) {
+        const initials = headerAvatarElement.textContent || 'U';
+        avatarElement.innerHTML = `
+          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+            <span id="avatar-initials">${initials}</span>
+          </div>
+          <div class="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors" onclick="profilePage.openAvatarOptions()">
+            <span class="material-symbols-outlined text-white text-sm">add</span>
+          </div>
+        `;
+      }
+
+      updateAvatarFromBase64(base64Image) {
+        const avatarElement = document.getElementById('profile-avatar');
+        const headerAvatarElement = document.getElementById('header-avatar');
+        
+        avatarElement.innerHTML = `
+          <img src="${base64Image}" alt="Avatar" class="w-24 h-24 rounded-full object-cover shadow-lg">
+          <div class="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-orange-600 transition-colors" onclick="profilePage.openAvatarOptions()">
+            <span class="material-symbols-outlined text-white text-sm">edit</span>
+          </div>
+        `;
+        
+        headerAvatarElement.innerHTML = `<img src="${base64Image}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+      }
+
+      getAvatarElement() {
+        return document.getElementById('profile-avatar');
+      }
+
+      getHeaderAvatarElement() {
+        return document.getElementById('header-avatar');
       }
 
       updateActiveMentorships() {
         const container = document.getElementById('active-mentorships');
 
-        if (!this.userData.activeMentorships.length) {
-          return; // Mantém o estado vazio padrão
+        if (!this.userData.activeMentorships || this.userData.activeMentorships.length === 0) {
+          console.log('📚 Nenhuma mentoria ativa para mostrar');
+          return; // Mantém o estado vazio padrão do HTML
         }
 
         container.innerHTML = this.userData.activeMentorships.map(mentorship => `
           <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-start mb-3">
               <div class="flex-1">
-                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentorship.topic}</h3>
+                <div class="flex items-center mb-2">
+                  ${mentorship.mentorAvatar ? `
+                    <img src="${mentorship.mentorAvatar}" alt="${mentorship.mentor}" class="w-6 h-6 rounded-full mr-2">
+                  ` : ''}
+                  <h3 class="font-bold text-text-main dark:text-white">${mentorship.title}</h3>
+                </div>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentorship.mentor}</p>
                 <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
                   <span class="material-symbols-outlined text-sm mr-1">schedule</span>
@@ -448,15 +609,21 @@
       updateUpcomingSessions() {
         const container = document.getElementById('upcoming-sessions');
 
-        if (!this.userData.upcomingSessions.length) {
-          return; // Mantém o estado vazio padrão
+        if (!this.userData.upcomingSessions || this.userData.upcomingSessions.length === 0) {
+          console.log('📅 Nenhuma sessão agendada para mostrar');
+          return; // Mantém o estado vazio padrão do HTML
         }
 
         container.innerHTML = this.userData.upcomingSessions.map(session => `
           <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
             <div class="flex justify-between items-start">
               <div class="flex-1">
-                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.topic}</h3>
+                <div class="flex items-center mb-2">
+                  ${session.mentorAvatar ? `
+                    <img src="${session.mentorAvatar}" alt="${session.mentor}" class="w-6 h-6 rounded-full mr-2">
+                  ` : ''}
+                  <h3 class="font-bold text-text-main dark:text-white">${session.title}</h3>
+                </div>
                 <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${session.mentor}</p>
                 <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-1">
                   <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
@@ -475,6 +642,378 @@
         `).join('');
       }
 
+      updateAccountInfo() {
+        // Atualizar informações da conta baseado no role do usuário
+        const user = this.userData.user;
+
+        // Encontrar a seção de informações da conta
+        const accountSection = document.querySelector('section:last-child');
+        if (accountSection) {
+          const planElement = accountSection.querySelector('.text-primary');
+          const statusElement = accountSection.querySelector('.text-success');
+
+          if (planElement) {
+            planElement.textContent = user.role === 'mentor' ? 'Mentor' :
+              user.role === 'premium' ? 'Premium' : 'Básico';
+          }
+
+          if (statusElement) {
+            statusElement.textContent = user.status === 'active' ? 'Ativo' : 'Inativo';
+          }
+        }
+      }
+
+      // Sistema de Upload de Avatar - SOLUÇÃO BASE64
+      openAvatarOptions() {
+        const modalHtml = `
+          <div id="avatar-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-[#333333] rounded-xl p-6 max-w-md w-full mx-4">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-text-main dark:text-white">Alterar Foto de Perfil</h3>
+                <button onclick="profilePage.closeAvatarModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              
+              <p class="text-slate-600 dark:text-slate-300 mb-4 text-sm">
+                Escolha uma das opções abaixo para sua foto de perfil:
+              </p>
+              
+              <div class="space-y-3">
+                <button onclick="profilePage.startUpload()" 
+                  class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                  <span class="material-symbols-outlined mr-2">upload</span>
+                  Fazer Upload de Imagem
+                </button>
+                
+                <button onclick="profilePage.useSampleAvatar()" 
+                  class="w-full border border-primary text-primary py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-colors flex items-center justify-center">
+                  <span class="material-symbols-outlined mr-2">photo_library</span>
+                  Usar Foto de Exemplo
+                </button>
+                
+                <div class="relative">
+                  <input type="text" id="avatar-url" 
+                    placeholder="Ou cole a URL de uma imagem online"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <button onclick="profilePage.useUrlAvatar()" 
+                  class="w-full border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  Usar URL da Imagem
+                </button>
+              </div>
+
+              <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-xs text-blue-600 dark:text-blue-400">
+                  💡 <strong>Sistema Local:</strong> As imagens são salvas localmente no seu navegador.
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      }
+
+      closeAvatarModal() {
+        const modal = document.getElementById('avatar-modal');
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      // Iniciar upload de arquivo - VERSÃO BASE64
+      startUpload() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        
+        fileInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            // Primeiro tentar converter para base64 e salvar localmente
+            try {
+              const base64Image = await this.fileToBase64(file);
+              this.saveAvatarAsBase64(base64Image);
+              this.showSuccess('Foto de perfil salva localmente!');
+              
+              // Tentar também fazer upload para o servidor em segundo plano
+              try {
+                await this.uploadAvatar(file);
+                console.log('✅ Upload para servidor também realizado');
+              } catch (uploadError) {
+                console.log('ℹ️ Upload para servidor falhou, mas imagem foi salva localmente');
+              }
+            } catch (error) {
+              this.showError('Erro ao processar a imagem');
+            }
+          }
+        };
+        
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        document.body.removeChild(fileInput);
+        this.closeAvatarModal();
+      }
+
+      // Converter arquivo para base64
+      fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(new Error('Erro ao ler arquivo'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      // Salvar avatar como base64
+      saveAvatarAsBase64(base64Image) {
+        localStorage.setItem('user_avatar_base64', base64Image);
+        this.updateAvatarFromBase64(base64Image);
+      }
+
+      // Upload para servidor (opcional)
+      async uploadAvatar(file) {
+        try {
+          // Verificar se o arquivo é muito grande
+          if (file.size > 5 * 1024 * 1024) {
+            throw new Error('A imagem deve ter menos de 5MB');
+          }
+
+          // Verificar se é uma imagem
+          if (!file.type.startsWith('image/')) {
+            throw new Error('Por favor, selecione apenas arquivos de imagem');
+          }
+
+          console.log('📤 Tentando upload para servidor...');
+
+          const formData = new FormData();
+          formData.append('avatar', file);
+
+          const token = localStorage.getItem('fin_token');
+          
+          const response = await fetch(`${this.API_BASE}/upload/avatar`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: formData
+          });
+
+          if (!response.ok) {
+            throw new Error(`Erro ${response.status} no servidor`);
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+            console.log('✅ Upload para servidor realizado com sucesso');
+            return result;
+          } else {
+            throw new Error(result.error || 'Erro ao processar upload');
+          }
+
+        } catch (error) {
+          console.log('❌ Upload para servidor falhou:', error.message);
+          throw error;
+        }
+      }
+
+      // Usar avatar de exemplo
+      async useSampleAvatar() {
+        const sampleAvatars = [
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?w=150&h=150&fit=crop&crop=face'
+        ];
+        
+        const randomAvatar = sampleAvatars[Math.floor(Math.random() * sampleAvatars.length)];
+        
+        // Tentar salvar como base64
+        try {
+          const response = await fetch(randomAvatar);
+          const blob = await response.blob();
+          const base64Image = await this.blobToBase64(blob);
+          this.saveAvatarAsBase64(base64Image);
+        } catch (error) {
+          // Fallback para URL normal
+          this.saveAvatarLocally(randomAvatar);
+        }
+        
+        this.closeAvatarModal();
+      }
+
+      // Converter blob para base64
+      blobToBase64(blob) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(new Error('Erro ao converter imagem'));
+          reader.readAsDataURL(blob);
+        });
+      }
+
+      // Usar avatar por URL
+      async useUrlAvatar() {
+        const urlInput = document.getElementById('avatar-url');
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+          this.showError('Por favor, insira uma URL válida');
+          return;
+        }
+        
+        try {
+          new URL(url);
+          
+          // Tentar converter para base64
+          try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const base64Image = await this.blobToBase64(blob);
+            this.saveAvatarAsBase64(base64Image);
+            this.showSuccess('Foto de perfil salva localmente!');
+          } catch (base64Error) {
+            // Fallback para URL normal
+            console.log('❌ Não foi possível converter para base64, usando URL diretamente');
+            this.saveAvatarLocally(url);
+          }
+          
+          this.closeAvatarModal();
+        } catch (e) {
+          this.showError('URL inválida. Use um formato como: https://exemplo.com/imagem.jpg');
+        }
+      }
+
+      // Salvar avatar localmente (fallback)
+      saveAvatarLocally(avatarUrl) {
+        localStorage.setItem('user_avatar', avatarUrl);
+        this.updateAvatar(avatarUrl);
+        this.showSuccess('Foto de perfil atualizada com sucesso!');
+      }
+
+      // Modal de Edição de Perfil
+      openEditProfileModal() {
+        const modalHtml = `
+          <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white dark:bg-[#333333] rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-text-main dark:text-white">Editar Perfil</h3>
+                <button onclick="profilePage.closeEditProfileModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+              
+              <form id="edit-profile-form" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nome</label>
+                    <input type="text" name="firstName" value="${this.userData.user.firstName}" required
+                      class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Sobrenome</label>
+                    <input type="text" name="lastName" value="${this.userData.user.lastName}" required
+                      class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Telefone</label>
+                  <input type="tel" name="phone" value="${this.userData.user.phone || ''}"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Bio</label>
+                  <textarea name="bio" rows="4"
+                    class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                    placeholder="Conte um pouco sobre você...">${this.userData.user.bio || ''}</textarea>
+                </div>
+                
+                <div class="flex space-x-3 pt-4">
+                  <button type="button" onclick="profilePage.closeEditProfileModal()"
+                    class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                    Cancelar
+                  </button>
+                  <button type="submit"
+                    class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        document.getElementById('edit-profile-form').onsubmit = (e) => {
+          e.preventDefault();
+          this.saveProfile();
+        };
+      }
+
+      closeEditProfileModal() {
+        const modal = document.getElementById('edit-profile-modal');
+        if (modal) {
+          modal.remove();
+        }
+      }
+
+      async saveProfile() {
+        try {
+          const form = document.getElementById('edit-profile-form');
+          const formData = new FormData(form);
+
+          const profileData = {
+            firstName: formData.get('firstName'),
+            lastName: formData.get('lastName'),
+            phone: formData.get('phone'),
+            bio: formData.get('bio')
+          };
+
+          const token = localStorage.getItem('fin_token');
+
+          // Tentar a rota de update - se não existir, mostrar mensagem
+          const response = await fetch(`${this.API_BASE}/users/profile`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(profileData)
+          });
+
+          if (response.status === 404) {
+            this.showInfo('Funcionalidade de edição em desenvolvimento!');
+            this.closeEditProfileModal();
+            return;
+          }
+
+          const result = await response.json();
+
+          if (response.ok) {
+            // Atualizar dados locais
+            this.userData.user = { ...this.userData.user, ...result.data.user };
+            this.updateUI();
+
+            this.closeEditProfileModal();
+            this.showSuccess('Perfil atualizado com sucesso!');
+          } else {
+            throw new Error(result.error || 'Erro ao atualizar perfil');
+          }
+
+        } catch (error) {
+          console.error('❌ Erro ao salvar perfil:', error);
+          this.showError(error.message);
+        }
+      }
+
       setupEventListeners() {
         document.getElementById('logout-btn').addEventListener('click', () => {
           if (confirm('Tem certeza que deseja sair?')) {
@@ -486,8 +1025,20 @@
         document.getElementById('theme-toggle-btn').addEventListener('click', this.toggleTheme);
 
         document.getElementById('edit-profile-btn').addEventListener('click', () => {
-          alert('Funcionalidade de edição de perfil em desenvolvimento!');
+          this.openEditProfileModal();
         });
+
+        // Tornar-se mentor
+        const becomeMentorBtn = document.querySelector('button.bg-gradient-to-r');
+        if (becomeMentorBtn) {
+          becomeMentorBtn.addEventListener('click', () => {
+            if (this.userData.user.role === 'mentor') {
+              this.showInfo('Você já é um mentor!');
+            } else {
+              this.showInfo('Funcionalidade de candidatura a mentor em breve!');
+            }
+          });
+        }
       }
 
       showLoading(show) {
@@ -504,8 +1055,51 @@
         }
       }
 
+      showSuccess(message) {
+        this.showNotification(message, 'success');
+      }
+
+      showError(message) {
+        this.showNotification(message, 'error');
+      }
+
+      showInfo(message) {
+        this.showNotification(message, 'info');
+      }
+
+      showNotification(message, type = 'info') {
+        const colors = {
+          success: 'bg-green-500 text-white',
+          error: 'bg-red-500 text-white',
+          info: 'bg-primary text-white'
+        };
+
+        const icons = {
+          success: 'check_circle',
+          error: 'error',
+          info: 'info'
+        };
+
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 ${colors[type]} p-4 rounded-lg shadow-lg z-50 animate-fade-in`;
+        notification.innerHTML = `
+          <div class="flex items-center">
+            <span class="material-symbols-outlined mr-2">${icons[type]}</span>
+            <span>${message}</span>
+          </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 5000);
+      }
+
       redirectToLogin() {
-        window.location.href = '../pages/login';
+        window.location.href = '../pages/login.html';
       }
 
       toggleTheme() {
@@ -522,18 +1116,29 @@
 
     // Inicializar quando DOM estiver pronto
     document.addEventListener('DOMContentLoaded', () => {
-      new ProfilePage();
+      window.profilePage = new ProfilePage();
     });
 
-    // Tema inicial - SEMPRE light por padrão
+    // Tema inicial
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
-      // Força tema light mesmo se o sistema for dark
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+
+    // Adicionar animação CSS
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fade-in {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+      }
+    `;
+    document.head.appendChild(style);
   </script>
 </body>
-
 </html>

@@ -3,7 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path'); // ✅ ADICIONAR ESTA LINHA
 require('dotenv').config();
+const chatRoutes = require('./routes/chatMentor');
 
 console.log('🚀 Iniciando servidor FIN Mentorship...');
 
@@ -11,7 +13,16 @@ console.log('🚀 Iniciando servidor FIN Mentorship...');
 const runMigrations = require('./database/migrate');
 
 const app = express();
+
+// ✅ CONFIGURAÇÃO DE ARQUIVOS ESTÁTICOS - ESSENCIAL PARA AVATARS
 app.use(express.static('public'));
+
+// ✅ SERVIR ARQUIVOS DE UPLOADS (AVATARS) - ADICIONAR ESTAS LINHAS
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+console.log('✅ Servindo arquivos estáticos de:', path.join(__dirname, 'uploads'));
+
+app.use(express.json()); // <- Essencial para req.body funcionar!
+app.use(cors());
 
 // Middleware
 app.use(helmet());
@@ -52,6 +63,61 @@ app.use((req, res, next) => {
   next();
 });
 
+// ✅ ROTA DE TESTE PARA AVATARS - ADICIONAR ESTA ROTA
+app.get('/api/test-avatar/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', 'avatars', filename);
+  
+  console.log('🔍 Verificando arquivo de avatar:', filePath);
+  
+  const fs = require('fs');
+  if (fs.existsSync(filePath)) {
+    console.log('✅ Arquivo de avatar existe, enviando...');
+    res.sendFile(filePath);
+  } else {
+    console.log('❌ Arquivo de avatar NÃO encontrado:', filePath);
+    res.status(404).json({ 
+      success: false, 
+      message: 'Arquivo de avatar não encontrado',
+      requested: filename,
+      path: filePath
+    });
+  }
+});
+
+// ✅ ROTA PARA LISTAR AVATARS DISPONÍVEIS (DEBUG)
+app.get('/api/debug-avatars', (req, res) => {
+  const avatarsPath = path.join(__dirname, 'uploads', 'avatars');
+  const fs = require('fs');
+  
+  try {
+    if (fs.existsSync(avatarsPath)) {
+      const files = fs.readdirSync(avatarsPath);
+      console.log(`📁 Encontrados ${files.length} arquivos de avatar:`);
+      files.forEach(file => console.log(`   - ${file}`));
+      
+      res.json({
+        success: true,
+        avatarsPath: avatarsPath,
+        files: files,
+        total: files.length
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'Pasta de avatars não existe',
+        path: avatarsPath
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao listar avatars',
+      error: error.message
+    });
+  }
+});
+
 // 🔥 CARREGAR ROTAS COM VERIFICAÇÃO DE ERRO
 try {
   const authRoutes = require('./routes/auth');
@@ -78,14 +144,23 @@ try {
   console.log('❌ Erro ao carregar rotas de admin:', error.message);
 }
 
-// 🔥 ADICIONAR ROTAS DE MENTORES AQUI
+// 🔥 ADICIONAR ROTAS DE MENTORES IA AQUI
+
+// ✅ Rota da IA
 try {
-  const mentorRoutes = require('./routes/mentors');
-  app.use('/api/mentors', mentorRoutes);
+  app.use('/api/chatMentor', chatRoutes);
   console.log('✅ Rotas de mentor (IA) carregadas');
 } catch (error) {
   console.log('⚠️  Rotas de mentor (IA) não disponíveis:', error.message);
 }
+
+// app.js ou server.js
+const mentorProfileRoutes = require('./routes/mentorProfile');
+const mentorRoutes = require('./routes/mentors');
+
+// Usar as rotas
+app.use('/api/mentor-profile', mentorProfileRoutes);
+app.use('/api/mentors', mentorRoutes);
 
 // 🔥 ADICIONAR ROTAS DE MENTORES (LISTAGEM) - ESSA É A QUE ESTÁ FALTANDO!
 try {
@@ -107,12 +182,36 @@ try {
   });
 }
 
+// 🔥 CARREGAR ROTAS DE UPLOAD
+try {
+  const uploadRoutes = require('./routes/upload');
+  app.use('/api/upload', uploadRoutes);
+  console.log('✅ Rotas de upload carregadas');
+} catch (error) {
+  console.error('❌ ERRO CRÍTICO: Falha ao carregar rotas de upload:', error.message);
+}
+
+// Adicionar também após as outras rotas de mentor
+try {
+  const mentorProfileRoutes = require('./routes/mentorProfile');
+  app.use('/api/mentor-profile', mentorProfileRoutes);
+  console.log('✅ Rotas de mentor-profile carregadas');
+} catch (error) {
+  console.log('⚠️  Rotas de mentor-profile não disponíveis:', error.message);
+}
+
 // 🔥 ROTA DE HEALTH CHECK PARA TESTE
 app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
     message: 'Servidor funcionando!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    uploadsPath: path.join(__dirname, 'uploads'),
+    staticRoutes: [
+      '/uploads/avatars/* - Arquivos de avatar',
+      '/api/test-avatar/:filename - Teste de avatar',
+      '/api/debug-avatars - Listar avatars'
+    ]
   });
 });
 
@@ -165,7 +264,9 @@ app.use('/api/*', (req, res) => {
       '/api/users/*',
       '/api/admin/*',
       '/api/mentor/*',
-      '/api/mentors/*'
+      '/api/mentors/*',
+      '/api/test-avatar/*',
+      '/api/debug-avatars'
     ]
   });
 });
@@ -233,6 +334,11 @@ async function startServer() {
       console.log(`   GET  http://localhost:${PORT}/api/auth/profile`);
       console.log(`   GET  http://localhost:${PORT}/api/mentors`);
       
+      console.log('\n🖼️  Endpoints Avatars:');
+      console.log(`   GET  http://localhost:${PORT}/uploads/avatars/{filename}`);
+      console.log(`   GET  http://localhost:${PORT}/api/test-avatar/{filename}`);
+      console.log(`   GET  http://localhost:${PORT}/api/debug-avatars`);
+      
       console.log('\n👑 Endpoints Admin:');
       console.log(`   GET  http://localhost:${PORT}/api/admin/stats`);
       console.log(`   GET  http://localhost:${PORT}/api/admin/users`);
@@ -247,6 +353,17 @@ async function startServer() {
       
       console.log('\n🔍 Para debug, acesse:');
       console.log(`   GET  http://localhost:${PORT}/api/routes - Lista todas as rotas`);
+      console.log(`   GET  http://localhost:${PORT}/api/debug-avatars - Lista avatars disponíveis`);
+      
+      // Teste automático da pasta de avatars
+      const fs = require('fs');
+      const avatarsPath = path.join(__dirname, 'uploads', 'avatars');
+      if (fs.existsSync(avatarsPath)) {
+        const files = fs.readdirSync(avatarsPath);
+        console.log(`\n📁 Pasta de avatars: ${files.length} arquivos encontrados`);
+      } else {
+        console.log('\n⚠️  Pasta de avatars não encontrada:', avatarsPath);
+      }
     });
     
   } catch (error) {

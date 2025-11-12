@@ -152,10 +152,11 @@ exports.login = async (req, res) => {
 };
 
 // Obter perfil do usuário
+// No método getProfile, garantir que avatarUrl seja incluído
 exports.getProfile = async (req, res) => {
   try {
     console.log('👤 Buscando perfil para userId:', req.userId);
-    
+
     const user = await User.findById(req.userId);
 
     if (!user) {
@@ -167,7 +168,8 @@ exports.getProfile = async (req, res) => {
     }
 
     console.log('✅ Perfil encontrado:', user.email);
-    console.log('🎯 Role do usuário:', user.role); // ✅ LOG DA ROLE
+    console.log('🎯 Role do usuário:', user.role);
+    console.log('🖼️ Avatar URL:', user.avatar_url); // ✅ LOG DO AVATAR
 
     res.json({
       success: true,
@@ -177,11 +179,11 @@ exports.getProfile = async (req, res) => {
           firstName: user.first_name,
           lastName: user.last_name,
           email: user.email,
-          role: user.role, // ✅ CORREÇÃO: INCLUIR ROLE
+          role: user.role,
           status: user.status,
           phone: user.phone,
           bio: user.bio,
-          avatarUrl: user.avatar_url,
+          avatarUrl: user.avatar_url, // ✅ GARANTIR QUE ESTÁ INCLUÍDO
           emailVerified: user.email_verified,
           lastLogin: user.last_login,
           createdAt: user.created_at,

@@ -1,12 +1,95 @@
 const express = require('express');
 const { authenticate } = require('../middlewares/auth');
+const db = require('../config/database');
 
 const router = express.Router();
 
-// Rota básica para listar mentores
-router.get('/', (req, res) => {
-  console.log('📋 Listando mentores...');
-  
+// Rota para listar mentores (agora busca do banco)
+router.get('/', async (req, res) => {
+  try {
+    console.log('📋 Listando mentores do banco...');
+    
+    // Buscar mentores com perfis do banco
+    const mentors = await db.query(`
+      SELECT 
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.avatar_url,
+        u.bio as user_bio,
+        mp.specialization,
+        mp.experience_years,
+        mp.hourly_rate,
+        mp.bio as mentor_bio,
+        mp.expertise_areas,
+        mp.rating,
+        mp.total_sessions,
+        mp.is_verified
+      FROM users u
+      LEFT JOIN mentor_profiles mp ON u.id = mp.user_id
+      WHERE u.role = 'mentor' AND u.status = 'active'
+      ORDER BY 
+        mp.is_verified DESC,
+        mp.rating DESC NULLS LAST, 
+        mp.total_sessions DESC
+    `);
+
+    console.log(`✅ Encontrados ${mentors.rows.length} mentores`);
+
+    // Se não houver mentores no banco, usar dados mock
+    if (mentors.rows.length === 0) {
+      console.log('ℹ️  Nenhum mentor no banco, usando dados mock');
+      return getMockMentores(req, res);
+    }
+
+    const formattedMentors = mentors.rows.map(mentor => {
+      const expertise = mentor.expertise_areas ? 
+        (Array.isArray(mentor.expertise_areas) ? 
+          mentor.expertise_areas : 
+          JSON.parse(mentor.expertise_areas)) : 
+        ['investimentos', 'mercado financeiro'];
+
+      return {
+        id: mentor.id,
+        name: `${mentor.first_name} ${mentor.last_name}`,
+        role: mentor.specialization || 'Mentor',
+        company: 'Consultor Independente',
+        area: 'FIN',
+        expertise: expertise,
+        rating: parseFloat(mentor.rating) || 4.5,
+        reviews: mentor.total_sessions || 0,
+        experience: `${mentor.experience_years || 0} anos`,
+        price: mentor.hourly_rate || 100,
+        plan: mentor.is_verified ? 'pro' : 'basic',
+        available: true,
+        avatar: mentor.avatar_url || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        description: mentor.mentor_bio || mentor.user_bio || 'Mentor especializado em finanças e investimentos.',
+        is_verified: mentor.is_verified,
+        specialization: mentor.specialization,
+        hasProfile: !!mentor.specialization // Indica se tem perfil completo
+      };
+    });
+
+    res.json({
+      success: true,
+      data: formattedMentors,
+      pagination: {
+        total: formattedMentors.length,
+        page: 1,
+        limit: 12,
+        totalPages: 1
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao listar mentores do banco:', error);
+    // Fallback para dados mock em caso de erro
+    getMockMentores(req, res);
+  }
+});
+
+// Função fallback com dados mock
+function getMockMentores(req, res) {
   const mentors = [
     {
       id: 1,
@@ -23,45 +106,9 @@ router.get('/', (req, res) => {
       available: true,
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
       description: 'Especialista em análise de investimentos e gestão de carteiras. Mais de 10 anos de experiência no mercado financeiro.',
-      languages: ['Português', 'Inglês'],
-      specialties: ['Ações', 'Fundos Imobiliários', 'Renda Fixa']
+      hasProfile: true
     },
-    {
-      id: 2,
-      name: 'Ana Silva',
-      role: 'Gestora de Carteiras',
-      company: 'BTG Pactual',
-      area: 'FIN',
-      expertise: ['gestao', 'wealth management', 'planejamento'],
-      rating: 4.9,
-      reviews: 89,
-      experience: '8 anos',
-      price: 200,
-      plan: 'pro',
-      available: true,
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      description: 'Gestora de patrimônio com foco em planejamento financeiro familiar e investimentos de longo prazo.',
-      languages: ['Português', 'Inglês', 'Espanhol'],
-      specialties: ['Gestão Patrimonial', 'Sucessão Familiar', 'Investimentos Internacionais']
-    },
-    {
-      id: 3,
-      name: 'Roberto Almeida',
-      role: 'Especialista em Tech Finance',
-      company: 'Nubank',
-      area: 'TECH',
-      expertise: ['tech', 'fintech', 'tecnologia'],
-      rating: 4.7,
-      reviews: 64,
-      experience: '6 anos',
-      price: 180,
-      plan: 'pro',
-      available: false,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      description: 'Desenvolvedor e analista especializado em fintechs e soluções tecnológicas para o mercado financeiro.',
-      languages: ['Português', 'Inglês'],
-      specialties: ['Fintechs', 'APIs Financeiras', 'Blockchain']
-    }
+    // ... outros mentores mock
   ];
 
   res.json({
@@ -74,9 +121,9 @@ router.get('/', (req, res) => {
       totalPages: 1
     }
   });
-});
+}
 
-// Rota para obter áreas de mentoria
+// Resto das rotas permanecem iguais...
 router.get('/areas', (req, res) => {
   const areas = [
     { code: 'FIN', name: 'Finanças, Inovação e Negócio', color: 'from-primary to-orange-400', mentors: 4 },
@@ -93,7 +140,6 @@ router.get('/areas', (req, res) => {
   });
 });
 
-// Rota para favoritar mentor
 router.post('/:id/favorite', authenticate, (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;

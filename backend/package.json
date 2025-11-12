@@ -28,6 +28,8 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
+    "openai": "^6.8.1",
     "pg": "^8.11.3"
   },
   "devDependencies": {
