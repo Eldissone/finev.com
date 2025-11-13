@@ -1,31 +1,20 @@
-// 🔥 CLASSE PRINCIPAL DA PÁGINA DE MENTORES
-class MentoresPage {
+class MentoriasPage {
     constructor() {
         this.authService = new AuthService();
         this.currentUser = null;
-        this.mentoresData = [];
-        this.filteredMentores = [];
-        this.currentFilters = {
-            area: 'all',
-            expertise: 'all',
-            plan: ['all', 'basic', 'pro', 'premium'],
-            rating: 0,
-            experience: ['junior', 'pleno', 'senior'],
-            search: ''
-        };
-        this.currentPage = 1;
-        this.mentoresPerPage = 9;
+        this.mentoriasData = null;
+        this.currentFilter = 'all';
+        this.isMentor = false;
         this.init();
     }
 
     async init() {
         try {
-            console.log('🚀 Iniciando página de mentores...');
+            console.log('🚀 Iniciando página de mentorias...');
             this.showLoading(true);
 
-            // ✅ VERIFICAÇÃO DE AUTENTICAÇÃO
-            const isAuthenticated = await this.checkAuth();
-            console.log('🔐 Resultado da autenticação:', isAuthenticated);
+            // Verificar autenticação
+            const isAuthenticated = await this.checkAuthentication();
 
             if (!isAuthenticated) {
                 console.log('❌ Não autenticado, redirecionando...');
@@ -33,611 +22,848 @@ class MentoresPage {
                 return;
             }
 
-            // ✅ CARREGAR DADOS DOS MENTORES DA API
-            await this.loadMentoresData();
+            // Verificar se usuário é mentor
+            await this.checkUserRole();
 
-            // ✅ ATUALIZAR UI
+            // Carregar dados das mentorias
+            await this.loadMentoriasData();
+
+            // Atualizar UI
             this.updateUI();
             this.setupEventListeners();
 
-            // ✅ ESCONDER LOADING E MOSTRAR CONTEÚDO
+            // Esconder loading e mostrar conteúdo
             this.showLoading(false);
             this.showContent(true);
 
-            console.log('✅ Página de mentores carregada com sucesso');
+            console.log('✅ Página de mentorias carregada com sucesso');
 
         } catch (error) {
-            console.error('💥 Erro ao carregar mentores:', error);
-            this.showError('Erro ao carregar mentores');
-            this.showLoading(false);
+            console.error('💥 Erro ao carregar mentorias:', error);
+            this.showError('Erro ao carregar mentorias');
         }
     }
 
-    async checkAuth() {
-        console.log('🔐 Verificando autenticação...');
-
+    async checkAuthentication() {
         const token = localStorage.getItem('fin_token');
-        console.log('Token no localStorage:', token ? 'EXISTE' : 'NÃO EXISTE');
 
         if (!token) {
-            console.log('❌ Nenhum token encontrado');
+            console.log('❌ Token não encontrado');
             return false;
         }
 
-        try {
-            console.log('🔄 Buscando perfil do usuário...');
-            // ✅ USAR O MÉTODO DO AuthService PARA GARANTIR CONSISTÊNCIA
-            const profile = await this.authService.getProfile();
-            console.log('Resposta do profile:', profile);
+        // Verificar com o backend
+        const profile = await this.authService.getProfile();
+        if (!profile.success) {
+            console.log('❌ Perfil não carregado:', profile.message);
+            return false;
+        }
 
-            if (profile.success) {
-                // ✅ CORRIGIR A ESTRUTURA DE DADOS
-                this.currentUser = profile.data.user || profile.data;
-                console.log('✅ Usuário autenticado:', this.currentUser);
-                return true;
-            } else {
-                console.log('❌ Falha ao carregar perfil:', profile.message);
-                return false;
-            }
+        this.currentUser = profile.data.user;
+        return true;
+    }
+
+    async checkUserRole() {
+        try {
+            const user = this.currentUser;
+            this.isMentor = user.role === 'mentor' || user.isMentor === true;
+            console.log(`👤 Role do usuário: ${this.isMentor ? 'mentor' : 'mentee'}`);
+            
         } catch (error) {
-            console.error('⚠️ Erro ao buscar profile:', error);
-            return false;
+            console.error('❌ Erro ao verificar role do usuário:', error);
+            this.isMentor = false;
         }
     }
 
-    logout() {
-        this.authService.logout();
-    }
-
-    redirectToLogin() {
-        console.log('🔄 Redirecionando para login...');
-        setTimeout(() => {
-            window.location.href = '../pages/login.html';
-        }, 1500);
-    }
-
-    showLoading(show) {
-        const loadingElement = document.getElementById('loading-state');
-        const contentElement = document.getElementById('mentores-content');
-
-        if (loadingElement) {
-            loadingElement.style.display = show ? 'flex' : 'none';
-        }
-        if (contentElement) {
-            contentElement.style.display = show ? 'none' : 'block';
-        }
-    }
-
-    showContent(show) {
-        const contentElement = document.getElementById('mentores-content');
-        if (contentElement) {
-            contentElement.style.display = show ? 'block' : 'none';
-        }
-    }
-
-    showError(message) {
-        console.error('💥 Erro:', message);
-
-        // Criar elemento de erro temporário
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 fade-in';
-        errorDiv.innerHTML = `
-          <div class="flex items-center">
-            <span class="material-symbols-outlined mr-2">error</span>
-            <span>${message}</span>
-          </div>
-        `;
-
-        document.body.appendChild(errorDiv);
-
-        // Remover após 5 segundos
-        setTimeout(() => {
-            if (errorDiv.parentNode) {
-                errorDiv.parentNode.removeChild(errorDiv);
-            }
-        }, 5000);
-    }
-
-    // ✅ CARREGAR DADOS DOS MENTORES DA API
-    async loadMentoresData() {
+    async loadMentoriasData() {
         try {
-            console.log('📊 Carregando dados dos mentores da API...');
-
-            const token = localStorage.getItem('fin_token');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-
-            const response = await fetch('http://localhost:5000/api/mentors', {
-                headers: headers
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.mentoresData = data.data || [];
-                console.log('✅ Mentores carregados da API:', this.mentoresData.length);
+            if (this.isMentor) {
+                await this.loadMentoriasFromAPI();
             } else {
-                console.log('⚠️ API não disponível, usando dados mock');
-                this.mentoresData = await this.getMockMentoresData();
+                await this.loadMentoriasAluno();
             }
-
-            this.filteredMentores = [...this.mentoresData];
 
         } catch (error) {
             console.error('❌ Erro ao carregar dados:', error);
-            console.log('🔄 Usando dados mock como fallback');
-            this.mentoresData = await this.getMockMentoresData();
-            this.filteredMentores = [...this.mentoresData];
+            this.loadMockData();
         }
     }
 
-    // ✅ DADOS MOCK PARA FALLBACK
-    async getMockMentoresData() {
-        return [
-            {
-                id: 1,
-                name: 'Carlos Mendes',
-                role: 'Analista Sênior de Investimentos',
-                company: 'XP Investimentos',
-                area: 'FIN',
-                expertise: ['investimentos', 'mercado financeiro', 'análise técnica'],
-                rating: 4.8,
-                reviews: 127,
-                experience: '12 anos',
-                price: 150,
-                plan: 'basic',
-                available: true,
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-                description: 'Especialista em análise de investimentos e gestão de carteiras. Mais de 10 anos de experiência no mercado financeiro.',
-                languages: ['Português', 'Inglês'],
-                specialties: ['Ações', 'Fundos Imobiliários', 'Renda Fixa']
-            },
-            // ... outros mentores (mantenha o restante dos dados mock)
-        ];
-    }
-
-    // ✅ ATUALIZAR INTERFACE
-    updateUI() {
-        console.log('🎨 Atualizando interface...');
-        console.log('👤 Dados do usuário para UI:', this.currentUser);
-
-        this.updateUserInfo();
-        this.updateStats();
-        this.updateAreas();
-        this.updateMentoresList();
-    }
-
-    // ✅ ATUALIZAR INFORMAÇÕES DO USUÁRIO (SISTEMA ATUALIZADO)
-    updateUserInfo() {
-        const user = this.currentUser;
-
-        if (!user) {
-            console.log('❌ Nenhum usuário para atualizar UI');
-            // Tentar carregar do localStorage como fallback
-            const savedUser = localStorage.getItem('fin_user');
-            if (savedUser) {
-                this.currentUser = JSON.parse(savedUser);
-                this.updateUserInfo(); // Recursão com dados do localStorage
-            }
-            return;
-        }
-
-        console.log('👤 Atualizando informações do usuário:', user);
-
-        // Nome do usuário no header
-        const userNameElement = document.getElementById('header-name');
-        if (userNameElement) {
-            const firstName = user.firstName || user.name || 'Usuário';
-            const lastName = user.lastName || '';
-            const userName = `${firstName} ${lastName}`.trim();
-            userNameElement.textContent = userName;
-            console.log('✅ Nome no header:', userName);
-        }
-
-        // Avatar do usuário - SISTEMA ATUALIZADO
-        const userAvatarElement = document.getElementById('header-avatar');
-        if (userAvatarElement) {
-            this.updateAvatar(user.avatarUrl, user);
-            console.log('✅ Avatar atualizado');
-        }
-    }
-
-    // ✅ SISTEMA DE AVATAR ATUALIZADO (MESMO PADRÃO DA PÁGINA DE ÁREAS)
-    updateAvatar(avatarUrl, user) {
-        const avatarElement = document.getElementById('header-avatar');
-        if (!avatarElement) return;
-
-        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
-
-        console.log('🖼️ Atualizando avatar no header...');
-
-        // PRIORIDADE 1: Base64 salvo localmente
-        const base64Avatar = localStorage.getItem('user_avatar_base64');
-        if (base64Avatar) {
-            console.log('🖼️ Usando avatar base64 local no header');
-            avatarElement.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-            return;
-        }
-
-        // PRIORIDADE 2: URL do servidor (com fallback robusto)
-        if (avatarUrl) {
-            console.log('🖼️ Tentando avatar do servidor no header:', avatarUrl);
-
-            // Criar uma imagem de teste para verificar se carrega
-            const testImage = new Image();
-            testImage.onload = () => {
-                console.log('✅ Imagem do servidor carregou com sucesso no header');
-                avatarElement.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-            };
-
-            testImage.onerror = () => {
-                console.log('❌ Imagem do servidor falhou no header, usando iniciais');
-                avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-            };
-
-            // Corrigir URL se necessário
-            const fullAvatarUrl = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000/api${avatarUrl}`;
-            testImage.src = `${fullAvatarUrl}?t=${Date.now()}`; // Adicionar timestamp para evitar cache
-
-            // Timeout para fallback
-            setTimeout(() => {
-                if (!testImage.complete) {
-                    console.log('⏰ Timeout - imagem não carregou a tempo no header');
-                    avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-                }
-            }, 3000);
-
-            return;
-        }
-
-        // PRIORIDADE 3: Avatar URL salvo localmente (fallback antigo)
-        const localAvatar = localStorage.getItem('user_avatar');
-        if (localAvatar && localAvatar.startsWith('http')) {
-            console.log('🖼️ Usando avatar URL local no header:', localAvatar);
-
-            const testImage = new Image();
-            testImage.onload = () => {
-                avatarElement.innerHTML = `<img src="${localAvatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-            };
-            testImage.onerror = () => {
-                avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-            };
-            testImage.src = `${localAvatar}?t=${Date.now()}`;
-
-            return;
-        }
-
-        // FALLBACK FINAL: Iniciais
-        console.log('🖼️ Nenhum avatar disponível no header, usando iniciais');
-        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-    }
-
-    // ✅ ATUALIZAR ESTATÍSTICAS
-    updateStats() {
-        const total = this.mentoresData.length;
-        const available = this.mentoresData.filter(m => m.available).length;
-        const pro = this.mentoresData.filter(m => m.plan === 'pro').length;
-        const premium = this.mentoresData.filter(m => m.plan === 'premium').length;
-
-        document.getElementById('total-mentors').textContent = total;
-        document.getElementById('available-now').textContent = available;
-        document.getElementById('pro-mentors').textContent = pro;
-        document.getElementById('premium-mentors').textContent = premium;
-    }
-
-    // ✅ ATUALIZAR ÁREAS
-    updateAreas() {
-        const areas = {
-            'FIN': { name: 'Finanças, Inovação e Negócio', color: 'from-primary to-orange-400', mentors: this.mentoresData.filter(m => m.area === 'FIN').length },
-            'TECH': { name: 'Tecnologia & Inovação', color: 'from-blue-500 to-cyan-400', mentors: this.mentoresData.filter(m => m.area === 'TECH').length },
-            'BIZ': { name: 'Business & Empreendedorismo', color: 'from-green-500 to-emerald-400', mentors: this.mentoresData.filter(m => m.area === 'BIZ').length },
-            'AGRO': { name: 'Agronegócio & Sustentabilidade', color: 'from-yellow-500 to-amber-400', mentors: this.mentoresData.filter(m => m.area === 'AGRO').length },
-            'LIFE': { name: 'Desenvolvimento Pessoal', color: 'from-purple-500 to-pink-400', mentors: this.mentoresData.filter(m => m.area === 'LIFE').length },
-            'HEALTH': { name: 'Saúde & Bem-estar', color: 'from-red-500 to-rose-400', mentors: this.mentoresData.filter(m => m.area === 'HEALTH').length }
-        };
-
-        const container = document.getElementById('areas-grid');
-        container.innerHTML = Object.entries(areas).map(([code, area]) => `
-          <div class="bg-gradient-to-r ${area.color} rounded-xl p-4 text-white cursor-pointer hover:scale-105 transition-transform duration-200" onclick="mentoresPage.filterByArea('${code}')">
-            <h4 class="text-lg font-bold mb-1">${code}</h4>
-            <p class="text-sm text-white/80 mb-2">${area.name}</p>
-            <div class="flex justify-between items-center">
-              <span class="text-xs bg-white/20 px-2 py-1 rounded-full">${area.mentors} mentores</span>
-              <span class="material-symbols-outlined text-sm">arrow_forward</span>
-            </div>
-          </div>
-        `).join('');
-    }
-
-    // ✅ ATUALIZAR LISTA DE MENTORES
-    updateMentoresList() {
-        const container = document.getElementById('mentors-grid');
-        const startIndex = (this.currentPage - 1) * this.mentoresPerPage;
-        const endIndex = startIndex + this.mentoresPerPage;
-        const currentMentores = this.filteredMentores.slice(startIndex, endIndex);
-
-        document.getElementById('mentors-count').textContent = `${this.filteredMentores.length} mentores encontrados`;
-
-        if (currentMentores.length === 0) {
-            container.innerHTML = `
-            <div class="col-span-full text-center py-12">
-              <span class="material-symbols-outlined text-4xl text-slate-400 mb-4">search_off</span>
-              <h3 class="text-lg font-medium text-text-main dark:text-white mb-2">Nenhum mentor encontrado</h3>
-              <p class="text-slate-600 dark:text-slate-400">Tente ajustar os filtros ou buscar por outros termos.</p>
-            </div>
-          `;
-            return;
-        }
-
-        container.innerHTML = currentMentores.map(mentor => `
-          <div class="mentor-card bg-white dark:bg-[#333333] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-700">
-            <!-- Header do Mentor -->
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex items-center space-x-3">
-                <img src="${mentor.avatar}" alt="${mentor.name}" class="w-12 h-12 rounded-full object-cover">
-                <div>
-                  <h3 class="font-bold text-text-main dark:text-white">${mentor.name}</h3>
-                  <p class="text-sm text-slate-600 dark:text-slate-400">${mentor.role}</p>
-                </div>
-              </div>
-              <span class="flex items-center ${mentor.plan === 'premium' ? 'bg-premium/10 text-premium' : mentor.plan === 'pro' ? 'bg-pro/10 text-pro' : 'bg-primary/10 text-primary'} text-xs px-2 py-1 rounded-full font-medium">
-                ${mentor.plan.toUpperCase()}
-              </span>
-            </div>
-
-            <!-- Informações -->
-            <div class="space-y-3 mb-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <span class="material-symbols-outlined text-yellow-400 text-sm mr-1">star</span>
-                  <span class="text-sm font-medium text-text-main dark:text-white">${mentor.rating}</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400 ml-1">(${mentor.reviews})</span>
-                </div>
-                <div class="flex items-center ${mentor.available ? 'text-success' : 'text-red-500'}">
-                  <span class="material-symbols-outlined text-sm mr-1">${mentor.available ? 'check_circle' : 'cancel'}</span>
-                  <span class="text-xs">${mentor.available ? 'Disponível' : 'Indisponível'}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                <span class="material-symbols-outlined text-sm mr-1">business</span>
-                ${mentor.company}
-              </div>
-
-              <div class="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                <span class="material-symbols-outlined text-sm mr-1">schedule</span>
-                ${mentor.experience} de experiência
-              </div>
-            </div>
-
-            <!-- Área e Especialidades -->
-            <div class="mb-4">
-              <div class="flex flex-wrap gap-1 mb-2">
-                <span class="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">${mentor.area}</span>
-                ${mentor.expertise.slice(0, 2).map(exp => `
-                  <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs px-2 py-1 rounded-full">${exp}</span>
-                `).join('')}
-                ${mentor.expertise.length > 2 ? `<span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 text-xs px-2 py-1 rounded-full">+${mentor.expertise.length - 2}</span>` : ''}
-              </div>
-            </div>
-
-            <!-- Descrição -->
-            <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2">${mentor.description}</p>
-
-            <!-- Ações -->
-            <div class="flex items-center justify-between">
-              <div class="text-lg font-bold text-primary">R$ ${mentor.price}/h</div>
-              <div class="flex space-x-2">
-                <button class="p-2 text-slate-400 hover:text-primary transition-colors" title="Favoritar" onclick="mentoresPage.toggleFavorite(${mentor.id})">
-                  <span class="material-symbols-outlined text-sm">favorite</span>
-                </button>
-                <button onclick="mentoresPage.viewMentorProfile(${mentor.id})" class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
-                  Ver Perfil
-                </button>
-              </div>
-            </div>
-          </div>
-        `).join('');
-
-        // Atualizar paginação
-        this.updatePagination();
-    }
-
-    // ✅ ATUALIZAR PAGINAÇÃO
-    updatePagination() {
-        const totalPages = Math.ceil(this.filteredMentores.length / this.mentoresPerPage);
-        const container = document.getElementById('pagination');
-
-        if (totalPages <= 1) {
-            container.innerHTML = '';
-            return;
-        }
-
-        let paginationHTML = '';
-
-        // Botão anterior
-        if (this.currentPage > 1) {
-            paginationHTML += `
-            <button onclick="mentoresPage.changePage(${this.currentPage - 1})" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
-              <span class="material-symbols-outlined text-sm">chevron_left</span>
-            </button>
-          `;
-        }
-
-        // Páginas
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === this.currentPage) {
-                paginationHTML += `
-              <button class="p-2 rounded-lg bg-primary text-white font-medium">${i}</button>
-            `;
-            } else {
-                paginationHTML += `
-              <button onclick="mentoresPage.changePage(${i})" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">${i}</button>
-            `;
-            }
-        }
-
-        // Botão próximo
-        if (this.currentPage < totalPages) {
-            paginationHTML += `
-            <button onclick="mentoresPage.changePage(${this.currentPage + 1})" class="p-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700">
-              <span class="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
-          `;
-        }
-
-        container.innerHTML = paginationHTML;
-    }
-
-    // ✅ FILTRAR POR ÁREA
-    filterByArea(area) {
-        document.getElementById('area-filter').value = area;
-        this.applyFilters();
-    }
-
-    // ✅ APLICAR FILTROS
-    applyFilters() {
-        // Coletar filtros
-        this.currentFilters.area = document.getElementById('area-filter').value;
-        this.currentFilters.expertise = document.getElementById('expertise-filter').value;
-        this.currentFilters.search = document.getElementById('search-mentors').value.toLowerCase();
-
-        // Coletar checkboxes de plano
-        const planCheckboxes = document.querySelectorAll('input[name="plan"]:checked');
-        this.currentFilters.plan = Array.from(planCheckboxes).map(cb => cb.value);
-
-        // Coletar radio de avaliação
-        const ratingRadio = document.querySelector('input[name="rating"]:checked');
-        this.currentFilters.rating = parseFloat(ratingRadio.value);
-
-        // Coletar checkboxes de experiência
-        const expCheckboxes = document.querySelectorAll('input[name="experience"]:checked');
-        this.currentFilters.experience = Array.from(expCheckboxes).map(cb => cb.value);
-
-        // Aplicar filtros
-        this.filteredMentores = this.mentoresData.filter(mentor => {
-            // Filtro de área
-            if (this.currentFilters.area !== 'all' && mentor.area !== this.currentFilters.area) {
-                return false;
-            }
-
-            // Filtro de especialidade
-            if (this.currentFilters.expertise !== 'all' && !mentor.expertise.includes(this.currentFilters.expertise)) {
-                return false;
-            }
-
-            // Filtro de plano
-            if (!this.currentFilters.plan.includes('all') && !this.currentFilters.plan.includes(mentor.plan)) {
-                return false;
-            }
-
-            // Filtro de avaliação
-            if (this.currentFilters.rating > 0 && mentor.rating < this.currentFilters.rating) {
-                return false;
-            }
-
-            // Filtro de experiência
-            let expMatch = false;
-            if (this.currentFilters.experience.includes('junior') && mentor.experience.includes('até 3')) expMatch = true;
-            if (this.currentFilters.experience.includes('pleno') && mentor.experience.includes('3-7')) expMatch = true;
-            if (this.currentFilters.experience.includes('senior') && mentor.experience.includes('+')) expMatch = true;
-            if (!expMatch) return false;
-
-            // Filtro de busca
-            if (this.currentFilters.search && !mentor.name.toLowerCase().includes(this.currentFilters.search) &&
-                !mentor.role.toLowerCase().includes(this.currentFilters.search) &&
-                !mentor.expertise.some(exp => exp.includes(this.currentFilters.search))) {
-                return false;
-            }
-
-            return true;
-        });
-
-        this.currentPage = 1;
-        this.updateMentoresList();
-    }
-
-    // ✅ MUDAR PÁGINA
-    changePage(page) {
-        this.currentPage = page;
-        this.updateMentoresList();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // ✅ VER PERFIL DO MENTOR
-    viewMentorProfile(mentorId) {
-        window.location.href = `../mentor/${mentorId}/`;
-    }
-
-    // ✅ FAVORITAR MENTOR
-    async toggleFavorite(mentorId) {
+    // ATUALIZADO: Carregar mentorias da API PostgreSQL
+    async loadMentoriasFromAPI() {
         try {
-            const token = localStorage.getItem('fin_token');
-            const response = await fetch(`http://localhost:5000/api/mentors/${mentorId}/favorite`, {
-                method: 'POST',
+            console.log('📡 Carregando mentorias da API PostgreSQL...');
+            
+            const response = await fetch('http://localhost:5000/api/mentorias/minhas', {
+                method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${localStorage.getItem('fin_token')}`,
                     'Content-Type': 'application/json'
                 }
             });
 
             if (response.ok) {
                 const data = await response.json();
-                this.showSuccess(data.message || 'Mentor favoritado com sucesso!');
+                console.log('✅ Resposta da API PostgreSQL:', data);
+                
+                if (data.success && data.data) {
+                    this.processAPIData(data.data);
+                } else {
+                    throw new Error(data.message || 'Dados inválidos da API');
+                }
             } else {
-                this.showError('Erro ao favoritar mentor');
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Erro HTTP: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Erro ao favoritar:', error);
-            this.showSuccess('Mentor favoritado!'); // Fallback visual
+            console.error('❌ Erro ao carregar da API, usando dados mock:', error);
+            this.loadMockData();
         }
     }
 
-    showSuccess(message) {
-        const successDiv = document.createElement('div');
-        successDiv.className = 'fixed top-4 right-4 bg-success text-white p-4 rounded-lg shadow-lg z-50 fade-in';
-        successDiv.innerHTML = `
-          <div class="flex items-center">
-            <span class="material-symbols-outlined mr-2">check_circle</span>
-            <span>${message}</span>
+    // NOVO MÉTODO: Carregar mentorias para alunos
+    async loadMentoriasAluno() {
+        try {
+            console.log('📡 Carregando mentorias disponíveis para aluno...');
+            
+            const response = await fetch('http://localhost:5000/api/mentorias', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('fin_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Mentorias disponíveis:', data);
+                
+                if (data.success && data.data) {
+                    this.processMentoriasAluno(data.data);
+                } else {
+                    throw new Error(data.message || 'Dados inválidos da API');
+                }
+            } else {
+                throw new Error('Erro ao carregar mentorias disponíveis');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao carregar mentorias para aluno:', error);
+            this.loadMockData();
+        }
+    }
+
+    // ATUALIZADO: Processar dados da API PostgreSQL
+    processAPIData(mentoriasAPI) {
+        console.log('📊 Processando dados da API PostgreSQL:', mentoriasAPI);
+        
+        // Para mentores: mostrar suas próprias mentorias
+        const activeMentorships = mentoriasAPI
+            .filter(m => m.disponivel === true)
+            .map(mentoria => ({
+                id: mentoria.id,
+                mentor: mentoria.mentor_nome,
+                mentorRole: mentoria.mentor_role,
+                topic: mentoria.titulo,
+                descricao: mentoria.descricao,
+                area: mentoria.area,
+                progress: this.calculateProgress(mentoria),
+                nextSession: this.getNextSession(mentoria),
+                sessionsCompleted: 0,
+                totalSessions: mentoria.duracao,
+                preco: mentoria.preco,
+                rating: 4.8,
+                dataCriacao: mentoria.data_criacao,
+                isOwner: true // Indica que é dono da mentoria
+            }));
+
+        const completedMentorships = mentoriasAPI
+            .filter(m => m.disponivel === false)
+            .map(mentoria => ({
+                id: mentoria.id,
+                mentor: mentoria.mentor_nome,
+                topic: mentoria.titulo,
+                descricao: mentoria.descricao,
+                area: mentoria.area,
+                completedDate: new Date(mentoria.data_criacao).toLocaleDateString('pt-BR'),
+                rating: 4.8,
+                sessionsCompleted: mentoria.duracao,
+                preco: mentoria.preco
+            }));
+
+        this.mentoriasData = {
+            activeMentorships,
+            upcomingSessions: this.getUpcomingSessions(activeMentorships),
+            completedMentorships,
+            stats: this.calculateStats(activeMentorships, completedMentorships)
+        };
+
+        console.log('✅ Dados processados para mentor:', this.mentoriasData);
+    }
+
+    // NOVO MÉTODO: Processar mentorias para alunos
+    processMentoriasAluno(mentoriasAPI) {
+        console.log('📊 Processando mentorias para aluno:', mentoriasAPI);
+        
+        // Para alunos: mostrar mentorias disponíveis de outros mentores
+        const availableMentorships = mentoriasAPI.map(mentoria => ({
+            id: mentoria.id,
+            mentor: mentoria.mentor_nome,
+            mentorRole: mentoria.mentor_role,
+            mentorAvatar: mentoria.mentor_avatar,
+            mentorBio: mentoria.mentor_bio,
+            mentorExpertise: mentoria.mentor_expertise,
+            topic: mentoria.titulo,
+            descricao: mentoria.descricao,
+            area: mentoria.area,
+            duracao: mentoria.duracao,
+            preco: mentoria.preco,
+            rating: 4.8, // Placeholder - você pode adicionar ratings reais
+            dataCriacao: mentoria.data_criacao,
+            isOwner: false // Aluno não é dono da mentoria
+        }));
+
+        this.mentoriasData = {
+            activeMentorships: availableMentorships,
+            upcomingSessions: [],
+            completedMentorships: [],
+            stats: {
+                active: availableMentorships.length,
+                monthSessions: 0,
+                totalHours: '0h',
+                completionRate: '0%',
+                nextSession: null
+            }
+        };
+
+        console.log('✅ Dados processados para aluno:', this.mentoriasData);
+    }
+
+    // Métodos auxiliares atualizados
+    calculateProgress(mentoria) {
+        return Math.min(100, Math.floor((Math.random() * 70) + 10));
+    }
+
+    getNextSession(mentoria) {
+        const date = new Date();
+        date.setDate(date.getDate() + 7);
+        return date.toLocaleDateString('pt-BR') + ' - 14:00';
+    }
+
+    getUpcomingSessions(activeMentorships) {
+        return activeMentorships.slice(0, 2).map((mentoria, index) => ({
+            id: index + 1,
+            mentorshipId: mentoria.id,
+            mentor: mentoria.mentor,
+            topic: `${mentoria.topic} - Aula ${Math.floor(Math.random() * 5) + 1}`,
+            date: new Date(Date.now() + (index + 3) * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR'),
+            time: '14:00',
+            duration: '60 min',
+            type: 'video',
+            joinLink: '#'
+        }));
+    }
+
+    calculateStats(activeMentorships, completedMentorships) {
+        return {
+            active: activeMentorships.length,
+            monthSessions: activeMentorships.length * 2,
+            totalHours: `${activeMentorships.length * 8}h`,
+            completionRate: `${Math.floor((completedMentorships.length / (completedMentorships.length + activeMentorships.length)) * 100) || 0}%`,
+            nextSession: activeMentorships.length > 0 ? {
+                id: activeMentorships[0].id,
+                mentor: activeMentorships[0].mentor,
+                topic: activeMentorships[0].topic,
+                date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('pt-BR'),
+                time: '14:00'
+            } : null
+        };
+    }
+
+    // ATUALIZADO: Dados mock com estrutura PostgreSQL
+    loadMockData() {
+        if (this.isMentor) {
+            this.mentoriasData = {
+                activeMentorships: [
+                    {
+                        id: 1,
+                        mentor: 'Carlos Mendes',
+                        mentorRole: 'Analista Sênior',
+                        topic: 'Análise de Investimentos',
+                        descricao: 'Mentoria completa sobre análise de investimentos',
+                        area: 'investimentos',
+                        progress: 60,
+                        nextSession: '30/10/2024 - 14:00',
+                        sessionsCompleted: 4,
+                        totalSessions: 8,
+                        preco: 299.90,
+                        rating: 4.8,
+                        isOwner: true
+                    }
+                ],
+                upcomingSessions: [
+                    {
+                        id: 1,
+                        mentorshipId: 1,
+                        mentor: 'Carlos Mendes',
+                        topic: 'Análise de Investimentos - Aula 5',
+                        date: '30/10/2024',
+                        time: '14:00',
+                        duration: '60 min',
+                        type: 'video',
+                        joinLink: '#'
+                    }
+                ],
+                completedMentorships: [],
+                stats: {
+                    active: 1,
+                    monthSessions: 2,
+                    totalHours: '8h',
+                    completionRate: '0%',
+                    nextSession: {
+                        id: 1,
+                        mentor: 'Carlos Mendes',
+                        topic: 'Análise de Investimentos',
+                        date: '30/10/2024',
+                        time: '14:00'
+                    }
+                }
+            };
+        } else {
+            this.mentoriasData = {
+                activeMentorships: [
+                    {
+                        id: 1,
+                        mentor: 'Carlos Mendes',
+                        mentorRole: 'Analista Sênior',
+                        mentorAvatar: null,
+                        mentorBio: 'Especialista em investimentos com 10 anos de experiência',
+                        mentorExpertise: 'Investimentos, Ações, Fundos',
+                        topic: 'Análise de Investimentos',
+                        descricao: 'Aprenda a analisar e escolher os melhores investimentos',
+                        area: 'investimentos',
+                        duracao: 8,
+                        preco: 299.90,
+                        rating: 4.8,
+                        isOwner: false
+                    },
+                    {
+                        id: 2,
+                        mentor: 'Ana Silva',
+                        mentorRole: 'Gestora de Carteiras',
+                        mentorAvatar: null,
+                        mentorBio: 'Gestora de carteiras em grande corretora',
+                        mentorExpertise: 'Gestão de Carteiras, Renda Fixa',
+                        topic: 'Gestão de Carteiras',
+                        descricao: 'Aprenda a gerenciar sua carteira de investimentos',
+                        area: 'gestao-carteiras',
+                        duracao: 6,
+                        preco: 199.90,
+                        rating: 4.9,
+                        isOwner: false
+                    }
+                ],
+                upcomingSessions: [],
+                completedMentorships: [],
+                stats: {
+                    active: 2,
+                    monthSessions: 0,
+                    totalHours: '0h',
+                    completionRate: '0%',
+                    nextSession: null
+                }
+            };
+        }
+    }
+
+    updateUI() {
+        if (!this.currentUser) return;
+
+        this.updateUserInfo();
+        this.toggleMentorButton();
+        this.updateStats();
+        this.updateActiveMentorships();
+        this.updateUpcomingSessions();
+        this.updateCompletedMentorships();
+        this.updateNextSession();
+    }
+
+    toggleMentorButton() {
+        const novaMentoriaBtn = document.getElementById('nova-mentoria-btn');
+        if (novaMentoriaBtn) {
+            if (this.isMentor) {
+                novaMentoriaBtn.classList.remove('hidden');
+                console.log('✅ Botão "Nova Mentoria" mostrado para mentor');
+            } else {
+                novaMentoriaBtn.classList.add('hidden');
+                console.log('❌ Botão "Nova Mentoria" ocultado para aluno');
+            }
+        }
+    }
+
+    updateUserInfo() {
+        const user = this.currentUser;
+        if (!user) return;
+
+        console.log('👤 Atualizando informações do usuário:', user);
+
+        const userNameElement = document.getElementById('header-name');
+        if (userNameElement) {
+            const firstName = user.firstName || user.name || 'Usuário';
+            const lastName = user.lastName || '';
+            const userName = `${firstName} ${lastName}`.trim();
+            userNameElement.textContent = userName;
+        }
+
+        const userAvatarElement = document.getElementById('header-avatar');
+        if (userAvatarElement) {
+            this.updateAvatar(user.avatarUrl, user);
+        }
+    }
+
+    updateAvatar(avatarUrl, user) {
+        const avatarElement = document.getElementById('header-avatar');
+        if (!avatarElement) return;
+
+        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+        const base64Avatar = localStorage.getItem('user_avatar_base64');
+
+        if (base64Avatar) {
+            avatarElement.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+            return;
+        }
+
+        if (avatarUrl) {
+            let fullAvatarUrl = avatarUrl;
+            if (avatarUrl.startsWith('/uploads/')) {
+                fullAvatarUrl = `http://localhost:5000${avatarUrl}`;
+            } else if (avatarUrl.startsWith('uploads/')) {
+                fullAvatarUrl = `http://localhost:5000/${avatarUrl}`;
+            }
+
+            const testImage = new Image();
+            testImage.onload = () => {
+                avatarElement.innerHTML = `<img src="${fullAvatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+            };
+            testImage.onerror = () => {
+                avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+            };
+            testImage.src = `${fullAvatarUrl}?t=${Date.now()}`;
+            return;
+        }
+
+        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+    }
+
+    updateStats() {
+        if (!this.mentoriasData?.stats) return;
+        
+        const stats = this.mentoriasData.stats;
+        document.getElementById('stats-active').textContent = stats.active;
+        document.getElementById('stats-month').textContent = stats.monthSessions;
+        document.getElementById('stats-hours').textContent = stats.totalHours;
+        document.getElementById('stats-completion').textContent = stats.completionRate;
+        document.getElementById('active-count').textContent = `${stats.active} ${this.isMentor ? 'ativas' : 'disponíveis'}`;
+        document.getElementById('completed-count').textContent = `${this.mentoriasData.completedMentorships?.length || 0} concluídas`;
+    }
+
+    // ATUALIZADO: Renderização de mentorias com dados PostgreSQL
+    updateActiveMentorships() {
+        const container = document.getElementById('active-mentorships');
+        const mentorias = this.mentoriasData?.activeMentorships || [];
+
+        if (!mentorias.length) {
+            container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">school</span>
+              <p class="mb-4">${this.isMentor ? 'Nenhuma mentoria ativa no momento' : 'Nenhuma mentoria disponível'}</p>
+              ${this.isMentor ? 
+                '<button id="nova-mentoria-empty" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">Criar Primeira Mentoria</button>' :
+                '<button onclick="window.location.href=\'../mentores/\'" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">Explorar Mentores</button>'
+              }
+            </div>
+          `;
+
+          const emptyBtn = document.getElementById('nova-mentoria-empty');
+          if (emptyBtn) {
+              emptyBtn.addEventListener('click', () => this.abrirModalNovaMentoria());
+          }
+            return;
+        }
+
+        container.innerHTML = mentorias.map(mentoria => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Com ${mentoria.mentor} • ${mentoria.mentorRole}
+                  ${mentoria.area ? `• ${this.formatArea(mentoria.area)}` : ''}
+                </p>
+                ${mentoria.descricao ? `
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-2 line-clamp-2">${mentoria.descricao}</p>
+                ` : ''}
+                ${this.isMentor ? `
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                  Próxima sessão: ${mentoria.nextSession}
+                </div>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">star</span>
+                  ${mentoria.rating} • ${mentoria.sessionsCompleted}/${mentoria.totalSessions} sessões
+                </div>
+                ` : `
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
+                  <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                  ${mentoria.duracao} sessões • ${mentoria.preco ? `R$ ${mentoria.preco.toFixed(2)}` : 'Gratuito'}
+                </div>
+                `}
+              </div>
+              ${this.isMentor ? `
+              <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${mentoria.progress}%</span>
+              ` : `
+              <div class="flex items-center bg-success/10 px-3 py-1 rounded-full">
+                <span class="material-symbols-outlined text-success text-sm mr-1">star</span>
+                <span class="font-bold text-success text-sm">${mentoria.rating}</span>
+              </div>
+              `}
+            </div>
+            ${this.isMentor ? `
+            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-3">
+              <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${mentoria.progress}%"></div>
+            </div>
+            ` : ''}
+            <div class="flex gap-2">
+              <button onclick="window.location.href='../mentoria/${mentoria.id}/'" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
+                Ver Detalhes
+              </button>
+              ${this.isMentor ? `
+              <button onclick="window.location.href='../sessao/agendar/?mentoria=${mentoria.id}'" class="flex-1 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Agendar
+              </button>
+              ` : `
+              <button onclick="mentoriasPage.inscreverMentoria(${mentoria.id})" class="flex-1 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Inscrever-se
+              </button>
+              `}
+            </div>
+          </div>
+        `).join('');
+    }
+
+    // NOVO MÉTODO: Formatar área para exibição
+    formatArea(area) {
+        const areasMap = {
+            'investimentos': 'Investimentos',
+            'gestao-carteiras': 'Gestão de Carteiras',
+            'mercado-acoes': 'Mercado de Ações',
+            'financas-pessoais': 'Finanças Pessoais',
+            'planejamento-financeiro': 'Planejamento Financeiro'
+        };
+        return areasMap[area] || area;
+    }
+
+    // NOVO MÉTODO: Inscrever-se em mentoria (para alunos)
+    async inscreverMentoria(mentoriaId) {
+        try {
+            console.log(`📝 Inscrevendo-se na mentoria ${mentoriaId}...`);
+            
+            // Aqui você implementaria a lógica de inscrição
+            const response = await fetch('http://localhost:5000/api/inscricoes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('fin_token')}`
+                },
+                body: JSON.stringify({
+                    mentoria_id: mentoriaId
+                })
+            });
+
+            if (response.ok) {
+                this.showSuccess('Inscrição realizada com sucesso!');
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao realizar inscrição');
+            }
+
+        } catch (error) {
+            console.error('❌ Erro ao inscrever-se:', error);
+            this.showError('Erro ao inscrever-se: ' + error.message);
+        }
+    }
+
+    updateUpcomingSessions() {
+        const container = document.getElementById('upcoming-sessions');
+        const sessions = this.mentoriasData?.upcomingSessions || [];
+
+        if (!sessions.length) {
+            container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">event</span>
+              <p>Nenhuma sessão agendada</p>
+            </div>
+          `;
+            return;
+        }
+
+        container.innerHTML = sessions.map(session => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${session.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-1">
+                  <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
+                  ${session.date} às ${session.time} • ${session.duration}
+                </div>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">${session.type === 'video' ? 'videocam' : 'location_on'}</span>
+                  ${session.type === 'video' ? 'Videochamada' : session.location}
+                </div>
+              </div>
+              <button onclick="window.location.href='${session.joinLink}'" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors whitespace-nowrap">
+                ${session.type === 'video' ? 'Entrar' : 'Ver Local'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    updateCompletedMentorships() {
+        const container = document.getElementById('completed-mentorships');
+        const mentorias = this.mentoriasData?.completedMentorships || [];
+
+        if (!mentorias.length) {
+            container.innerHTML = `
+            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
+              <span class="material-symbols-outlined text-4xl mb-2">check_circle</span>
+              <p>Nenhuma mentoria concluída</p>
+            </div>
+          `;
+            return;
+        }
+
+        container.innerHTML = mentorias.map(mentoria => `
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
+                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentoria.mentor}</p>
+                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+                  Concluída em ${mentoria.completedDate} • ${mentoria.sessionsCompleted} sessões
+                </div>
+              </div>
+              <div class="flex items-center bg-success/10 px-3 py-1 rounded-full">
+                <span class="material-symbols-outlined text-success text-sm mr-1">star</span>
+                <span class="font-bold text-success text-sm">${mentoria.rating}</span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+    }
+
+    updateNextSession() {
+        const container = document.getElementById('next-session-card');
+        const nextSession = this.mentoriasData?.stats?.nextSession;
+
+        if (!nextSession) {
+            container.innerHTML = `
+            <div class="bg-white/20 rounded-lg p-4 text-center">
+              <span class="material-symbols-outlined text-white/60 text-4xl mb-2">event_available</span>
+              <p class="text-white/80 text-sm">Nenhuma sessão agendada</p>
+            </div>
+          `;
+            return;
+        }
+
+        container.innerHTML = `
+          <div class="bg-white/20 rounded-lg p-4">
+            <h3 class="font-bold mb-1">${nextSession.topic}</h3>
+            <p class="text-white/90 text-sm mb-2">Com ${nextSession.mentor}</p>
+            <div class="flex items-center text-white/80 text-sm mb-3">
+              <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+              ${nextSession.date} às ${nextSession.time}
+            </div>
+            <button onclick="window.location.href='../sessao/${nextSession.id}/'" class="w-full bg-white text-primary py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+              Preparar para Sessão
+            </button>
           </div>
         `;
-
-        document.body.appendChild(successDiv);
-
-        setTimeout(() => {
-            if (successDiv.parentNode) {
-                successDiv.parentNode.removeChild(successDiv);
-            }
-        }, 3000);
     }
 
-    // ✅ CONFIGURAR EVENT LISTENERS
     setupEventListeners() {
-        console.log('🔗 Configurando event listeners...');
-
-        // Logout
         document.getElementById('logout-btn').addEventListener('click', () => {
-            console.log('🚪 Logout solicitado');
             if (confirm('Tem certeza que deseja sair?')) {
-                this.logout();
+                this.authService.logout();
             }
         });
 
-        // Tema
-        document.getElementById('theme-toggle').addEventListener('click', () => this.toggleTheme());
+        document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
 
         // Filtros
-        document.getElementById('area-filter').addEventListener('change', () => this.applyFilters());
-        document.getElementById('expertise-filter').addEventListener('change', () => this.applyFilters());
-        document.getElementById('search-mentors').addEventListener('input', () => this.applyFilters());
-        document.getElementById('apply-filters').addEventListener('click', () => this.applyFilters());
+        document.getElementById('filter-all').addEventListener('click', () => this.setFilter('all'));
+        document.getElementById('filter-active').addEventListener('click', () => this.setFilter('active'));
+        document.getElementById('filter-completed').addEventListener('click', () => this.setFilter('completed'));
 
-        // Checkboxes e radios
-        document.querySelectorAll('input[name="plan"], input[name="rating"], input[name="experience"]').forEach(input => {
-            input.addEventListener('change', () => this.applyFilters());
+        // Eventos do modal de nova mentoria (apenas para mentores)
+        if (this.isMentor) {
+            this.setupMentorEventListeners();
+        }
+    }
+
+    setupMentorEventListeners() {
+        const novaMentoriaBtn = document.getElementById('nova-mentoria-btn');
+        if (novaMentoriaBtn) {
+            novaMentoriaBtn.addEventListener('click', () => this.abrirModalNovaMentoria());
+        }
+        this.setupModalEventListeners();
+    }
+
+    abrirModalNovaMentoria() {
+        const modal = document.getElementById('modal-nova-mentoria');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    setupModalEventListeners() {
+        const modal = document.getElementById('modal-nova-mentoria');
+        const fecharModal = document.getElementById('fechar-modal');
+        const cancelarBtn = document.getElementById('cancelar-mentoria');
+        const form = document.getElementById('form-nova-mentoria');
+
+        if (!modal || !fecharModal || !cancelarBtn || !form) {
+            console.log('❌ Elementos do modal não encontrados');
+            return;
+        }
+
+        const closeModal = () => {
+            modal.classList.add('hidden');
+            form.reset();
+        };
+
+        fecharModal.addEventListener('click', closeModal);
+        cancelarBtn.addEventListener('click', closeModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.criarNovaMentoria();
         });
     }
 
-    // ✅ ALTERNAR TEMA
+    async criarNovaMentoria() {
+        try {
+            const formData = {
+                titulo: document.getElementById('mentoria-titulo').value,
+                descricao: document.getElementById('mentoria-descricao').value,
+                area: document.getElementById('mentoria-area').value,
+                duracao: parseInt(document.getElementById('mentoria-duracao').value),
+                preco: parseFloat(document.getElementById('mentoria-preco').value),
+                disponivel: document.getElementById('disponivel').checked
+            };
+
+            console.log('📝 Criando nova mentoria:', formData);
+
+            const resultado = await this.salvarMentoria(formData);
+
+            if (resultado.success) {
+                this.showSuccess('Mentoria criada com sucesso!');
+                this.fecharModalNovaMentoria();
+                await this.loadMentoriasData();
+                this.updateUI();
+            } else {
+                throw new Error(resultado.message || 'Erro ao criar mentoria');
+            }
+
+        } catch (error) {
+            console.error('❌ Erro ao criar mentoria:', error);
+            this.showError('Erro ao criar mentoria: ' + error.message);
+        }
+    }
+
+    async salvarMentoria(mentoriaData) {
+        try {
+            const response = await fetch('http://localhost:5000/api/mentorias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('fin_token')}`
+                },
+                body: JSON.stringify(mentoriaData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao criar mentoria');
+            }
+
+            return data;
+
+        } catch (error) {
+            console.error('❌ Erro na API:', error);
+            throw error;
+        }
+    }
+
+    fecharModalNovaMentoria() {
+        const modal = document.getElementById('modal-nova-mentoria');
+        const form = document.getElementById('form-nova-mentoria');
+        if (modal) modal.classList.add('hidden');
+        if (form) form.reset();
+    }
+
+    showSuccess(message) {
+        alert(message);
+    }
+
+    showError(message) {
+        alert('Erro: ' + message);
+    }
+
+    setFilter(filter) {
+        this.currentFilter = filter;
+
+        document.getElementById('filter-all').classList.toggle('bg-primary', filter === 'all');
+        document.getElementById('filter-all').classList.toggle('text-white', filter === 'all');
+        document.getElementById('filter-all').classList.toggle('border', filter !== 'all');
+
+        document.getElementById('filter-active').classList.toggle('bg-primary', filter === 'active');
+        document.getElementById('filter-active').classList.toggle('text-white', filter === 'active');
+        document.getElementById('filter-active').classList.toggle('border', filter !== 'active');
+
+        document.getElementById('filter-completed').classList.toggle('bg-primary', filter === 'completed');
+        document.getElementById('filter-completed').classList.toggle('text-white', filter === 'completed');
+        document.getElementById('filter-completed').classList.toggle('border', filter !== 'completed');
+
+        console.log(`Filtro aplicado: ${filter}`);
+    }
+
+    showLoading(show) {
+        const loadingElement = document.getElementById('loading-state');
+        if (loadingElement) {
+            loadingElement.style.display = show ? 'flex' : 'none';
+        }
+    }
+
+    showContent(show) {
+        const contentElement = document.getElementById('mentorias-content');
+        if (contentElement) {
+            contentElement.style.display = show ? 'block' : 'none';
+        }
+    }
+
+    redirectToLogin() {
+        window.location.href = '../pages/login.html';
+    }
+
     toggleTheme() {
         const html = document.documentElement;
         if (html.classList.contains('dark')) {
@@ -650,15 +876,13 @@ class MentoresPage {
     }
 }
 
-// ✅ INICIALIZAÇÃO
+// Inicializar quando DOM estiver pronto
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('✅ DOM carregado, iniciando página de mentores...');
-
-    // Inicializar página de mentores
-    window.mentoresPage = new MentoresPage();
+    console.log('✅ DOM carregado, iniciando página de mentorias...');
+    window.mentoriasPage = new MentoriasPage();
 });
 
-// ✅ TEMA INICIAL
+// Tema inicial
 if (localStorage.getItem('theme') === 'dark') {
     document.documentElement.classList.add('dark');
 } else {
@@ -666,10 +890,10 @@ if (localStorage.getItem('theme') === 'dark') {
     localStorage.setItem('theme', 'light');
 }
 
-// ✅ DEBUG HELPER
+// Debug helper
 window.debugUser = () => {
     console.log('🔍 DEBUG USER DATA:');
-    console.log('currentUser:', window.mentoresPage?.currentUser);
+    console.log('currentUser:', window.mentoriasPage?.currentUser);
     console.log('localStorage fin_user:', localStorage.getItem('fin_user'));
     console.log('localStorage fin_token:', localStorage.getItem('fin_token'));
     console.log('localStorage user_avatar_base64:', localStorage.getItem('user_avatar_base64') ? 'EXISTS' : 'NOT EXISTS');

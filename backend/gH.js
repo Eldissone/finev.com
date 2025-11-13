@@ -8,7 +8,7 @@ async function hashPassword(plainPassword) {
 }
 
 // Exemplo de uso:
-const newPassword = 'Bell@123';
+const newPassword = '123Bell@';
 hashPassword(newPassword).then((hashedPassword) => {
     console.log('Senha hashada:', hashedPassword);
 });

@@ -110,6 +110,7 @@
           <h1 class="text-3xl font-bold text-text-main dark:text-white mb-2">Minhas Mentorias</h1>
           <p class="text-slate-600 dark:text-slate-300">Gerencie suas sessões de mentoria e acompanhe seu progresso</p>
         </div>
+        <!-- Substitua esta parte -->
         <div class="flex flex-wrap gap-3">
           <button id="filter-all"
             class="px-4 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-opacity-90 transition-colors">
@@ -123,11 +124,89 @@
             class="px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
             Concluídas
           </button>
-          <button onclick="window.location.href='../mentores/'"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors flex items-center">
+
+          <!-- Botão Nova Mentoria (apenas para mentores) -->
+          <button id="nova-mentoria-btn"
+            class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium text-sm hover:bg-green-700 transition-colors flex items-center hidden">
             <span class="material-symbols-outlined mr-2 text-sm">add</span>
             Nova Mentoria
           </button>
+        </div>
+      </div>
+
+      <!-- Modal Nova Mentoria -->
+      <div id="modal-nova-mentoria"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-[#333333] rounded-xl p-6 w-full max-w-md mx-4">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-text-main dark:text-white">Criar Nova Mentoria</h3>
+            <button id="fechar-modal" class="text-slate-500 hover:text-slate-700 dark:hover:text-white">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <form id="form-nova-mentoria" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Título da Mentoria</label>
+              <input type="text" id="mentoria-titulo" required
+                class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Descrição</label>
+              <textarea id="mentoria-descricao" rows="3" required
+                class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Área</label>
+              <select id="mentoria-area" required
+                class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="">Selecione uma área</option>
+                <option value="investimentos">Investimentos</option>
+                <option value="gestao-carteiras">Gestão de Carteiras</option>
+                <option value="mercado-acoes">Mercado de Ações</option>
+                <option value="financas-pessoais">Finanças Pessoais</option>
+                <option value="planejamento-financeiro">Planejamento Financeiro</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Duração (sessões)</label>
+                <input type="number" id="mentoria-duracao" min="1" max="12" required
+                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Preço (R$)</label>
+                <input type="number" id="mentoria-preco" min="0" step="0.01" required
+                  class="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-text-main dark:text-white mb-2">Disponibilidade</label>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" id="disponivel" checked
+                    class="rounded border-slate-300 text-primary focus:ring-primary">
+                  <span class="ml-2 text-sm text-text-main dark:text-white">Mentoria disponível para novos alunos</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="flex gap-3 pt-4">
+              <button type="button" id="cancelar-mentoria"
+                class="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                Cancelar
+              </button>
+              <button type="submit"
+                class="flex-1 px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                Criar Mentoria
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -248,548 +327,8 @@
   </main>
 
   <script src="../js/auth.js"></script>
-  <script>
-    class MentoriasPage {
-      constructor() {
-        this.authService = new AuthService();
-        this.currentUser = null;
-        this.mentoriasData = null;
-        this.currentFilter = 'all';
-        this.init();
-      }
-
-      async init() {
-        try {
-          console.log('🚀 Iniciando página de mentorias...');
-          this.showLoading(true);
-
-          // Verificar autenticação
-          const isAuthenticated = await this.checkAuthentication();
-
-          if (!isAuthenticated) {
-            console.log('❌ Não autenticado, redirecionando...');
-            this.redirectToLogin();
-            return;
-          }
-
-          // Carregar dados das mentorias
-          await this.loadMentoriasData();
-
-          // Atualizar UI
-          this.updateUI();
-          this.setupEventListeners();
-
-          // Esconder loading e mostrar conteúdo
-          this.showLoading(false);
-          this.showContent(true);
-
-          console.log('✅ Página de mentorias carregada com sucesso');
-
-        } catch (error) {
-          console.error('💥 Erro ao carregar mentorias:', error);
-          this.showError('Erro ao carregar mentorias');
-        }
-      }
-
-      async checkAuthentication() {
-        const token = localStorage.getItem('fin_token');
-
-        if (!token) {
-          console.log('❌ Token não encontrado');
-          return false;
-        }
-
-        // Verificar com o backend
-        const profile = await this.authService.getProfile();
-        if (!profile.success) {
-          console.log('❌ Perfil não carregado:', profile.message);
-          return false;
-        }
-
-        this.currentUser = profile.data.user;
-        return true;
-      }
-
-      async loadMentoriasData() {
-        try {
-          // Dados mock - em produção viriam da API
-          this.mentoriasData = {
-            activeMentorships: [
-              {
-                id: 1,
-                mentor: 'Carlos Mendes',
-                mentorRole: 'Analista Sênior',
-                topic: 'Análise de Investimentos',
-                progress: 60,
-                nextSession: '30/10/2024 - 14:00',
-                sessionsCompleted: 4,
-                totalSessions: 8,
-                rating: 4.8
-              },
-              {
-                id: 2,
-                mentor: 'Ana Silva',
-                mentorRole: 'Gestora de Carteiras',
-                topic: 'Gestão de Carteiras',
-                progress: 40,
-                nextSession: '02/11/2024 - 10:00',
-                sessionsCompleted: 2,
-                totalSessions: 6,
-                rating: 4.9
-              },
-              {
-                id: 3,
-                mentor: 'Roberto Almeida',
-                mentorRole: 'Especialista em Ações',
-                topic: 'Mercado de Ações',
-                progress: 25,
-                nextSession: '05/11/2024 - 16:30',
-                sessionsCompleted: 1,
-                totalSessions: 4,
-                rating: 4.7
-              }
-            ],
-            upcomingSessions: [
-              {
-                id: 1,
-                mentorshipId: 1,
-                mentor: 'Carlos Mendes',
-                topic: 'Análise de Investimentos - Aula 5',
-                date: '30/10/2024',
-                time: '14:00',
-                duration: '60 min',
-                type: 'video',
-                joinLink: '#'
-              },
-              {
-                id: 2,
-                mentorshipId: 2,
-                mentor: 'Ana Silva',
-                topic: 'Gestão de Carteiras - Aula 3',
-                date: '02/11/2024',
-                time: '10:00',
-                duration: '45 min',
-                type: 'presencial',
-                location: 'São Paulo - SP'
-              }
-            ],
-            completedMentorships: [
-              {
-                id: 4,
-                mentor: 'Maria Santos',
-                topic: 'Fundamentos de Finanças',
-                completedDate: '15/09/2024',
-                rating: 4.8,
-                sessionsCompleted: 6
-              },
-              {
-                id: 5,
-                mentor: 'João Pereira',
-                topic: 'Planejamento Financeiro',
-                completedDate: '28/08/2024',
-                rating: 4.6,
-                sessionsCompleted: 5
-              }
-            ],
-            stats: {
-              active: 3,
-              monthSessions: 5,
-              totalHours: '24h',
-              completionRate: '85%',
-              nextSession: {
-                mentor: 'Carlos Mendes',
-                topic: 'Análise de Investimentos',
-                date: '30/10/2024',
-                time: '14:00'
-              }
-            }
-          };
-
-        } catch (error) {
-          console.error('❌ Erro ao carregar dados:', error);
-          throw error;
-        }
-      }
-
-      updateUI() {
-        if (!this.currentUser) return;
-
-        // Atualizar header com sistema de avatar
-        this.updateUserInfo();
-
-        // Atualizar estatísticas
-        this.updateStats();
-
-        // Atualizar mentorias ativas
-        this.updateActiveMentorships();
-
-        // Atualizar próximas sessões
-        this.updateUpcomingSessions();
-
-        // Atualizar mentorias concluídas
-        this.updateCompletedMentorships();
-
-        // Atualizar próxima sessão
-        this.updateNextSession();
-      }
-
-      // ✅ SISTEMA DE AVATAR ATUALIZADO (MESMO PADRÃO DAS OUTRAS PÁGINAS)
-      updateUserInfo() {
-        const user = this.currentUser;
-
-        if (!user) {
-          console.log('❌ Nenhum usuário para atualizar UI');
-          return;
-        }
-
-        console.log('👤 Atualizando informações do usuário:', user);
-
-        // Nome do usuário no header
-        const userNameElement = document.getElementById('header-name');
-        if (userNameElement) {
-          const firstName = user.firstName || user.name || 'Usuário';
-          const lastName = user.lastName || '';
-          const userName = `${firstName} ${lastName}`.trim();
-          userNameElement.textContent = userName;
-          console.log('✅ Nome no header:', userName);
-        }
-
-        // Avatar do usuário
-        const userAvatarElement = document.getElementById('header-avatar');
-        if (userAvatarElement) {
-          this.updateAvatar(user.avatarUrl, user);
-          console.log('✅ Avatar atualizado');
-        }
-      }
-
-      // ✅ SISTEMA DE AVATAR COMPLETO
-      updateAvatar(avatarUrl, user) {
-        const avatarElement = document.getElementById('header-avatar');
-        if (!avatarElement) return;
-
-        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
-
-        console.log('🖼️ Atualizando avatar no header...');
-        console.log('📁 Avatar URL recebida:', avatarUrl);
-
-        // PRIORIDADE 1: Base64 salvo localmente
-        const base64Avatar = localStorage.getItem('user_avatar_base64');
-        if (base64Avatar) {
-          console.log('🖼️ Usando avatar base64 local no header');
-          avatarElement.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-          return;
-        }
-
-        // PRIORIDADE 2: URL do servidor (COM CORREÇÃO DA URL)
-        if (avatarUrl) {
-          console.log('🖼️ Tentando avatar do servidor no header:', avatarUrl);
-
-          // CORREÇÃO: Verificar se é uma URL completa ou relativa
-          let fullAvatarUrl;
-
-          if (avatarUrl.startsWith('http')) {
-            // Já é uma URL completa
-            fullAvatarUrl = avatarUrl;
-          } else if (avatarUrl.startsWith('/uploads/')) {
-            // URL relativa do servidor - ajustar para o backend
-            fullAvatarUrl = `http://localhost:5000${avatarUrl}`;
-          } else if (avatarUrl.startsWith('uploads/')) {
-            // URL relativa sem a barra
-            fullAvatarUrl = `http://localhost:5000/${avatarUrl}`;
-          } else {
-            // Outro formato - tentar como está
-            fullAvatarUrl = `http://localhost:5000/uploads/avatars/${avatarUrl}`;
-          }
-
-          console.log('🔗 URL final do avatar:', fullAvatarUrl);
-
-          const testImage = new Image();
-          testImage.onload = () => {
-            console.log('✅ Imagem do servidor carregou com sucesso no header');
-            avatarElement.innerHTML = `<img src="${fullAvatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-          };
-
-          testImage.onerror = () => {
-            console.log('❌ Imagem do servidor falhou no header, usando iniciais');
-            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-          };
-
-          testImage.src = `${fullAvatarUrl}?t=${Date.now()}`;
-
-          setTimeout(() => {
-            if (!testImage.complete) {
-              console.log('⏰ Timeout - imagem não carregou a tempo no header');
-              avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-            }
-          }, 3000);
-          return;
-        }
-
-        // PRIORIDADE 3: Avatar URL salvo localmente
-        const localAvatar = localStorage.getItem('user_avatar');
-        if (localAvatar) {
-          console.log('🖼️ Usando avatar URL local no header:', localAvatar);
-
-          const testImage = new Image();
-          testImage.onload = () => {
-            avatarElement.innerHTML = `<img src="${localAvatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
-          };
-          testImage.onerror = () => {
-            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-          };
-          testImage.src = `${localAvatar}?t=${Date.now()}`;
-          return;
-        }
-
-        // FALLBACK FINAL: Iniciais
-        console.log('🖼️ Nenhum avatar disponível no header, usando iniciais');
-        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
-      }
-
-      updateStats() {
-        const stats = this.mentoriasData.stats;
-        document.getElementById('stats-active').textContent = stats.active;
-        document.getElementById('stats-month').textContent = stats.monthSessions;
-        document.getElementById('stats-hours').textContent = stats.totalHours;
-        document.getElementById('stats-completion').textContent = stats.completionRate;
-        document.getElementById('active-count').textContent = `${stats.active} ativas`;
-        document.getElementById('completed-count').textContent = `${this.mentoriasData.completedMentorships.length} concluídas`;
-      }
-
-      updateActiveMentorships() {
-        const container = document.getElementById('active-mentorships');
-        const mentorias = this.mentoriasData.activeMentorships;
-
-        if (!mentorias.length) {
-          container.innerHTML = `
-            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
-              <span class="material-symbols-outlined text-4xl mb-2">school</span>
-              <p class="mb-4">Nenhuma mentoria ativa no momento</p>
-              <button onclick="window.location.href='../mentores/'" class="px-4 py-2 bg-primary text-white rounded-lg font-medium hover:bg-opacity-90 transition-colors">
-                Encontrar Mentores
-              </button>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = mentorias.map(mentoria => `
-          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex-1">
-                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentoria.mentor} • ${mentoria.mentorRole}</p>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
-                  <span class="material-symbols-outlined text-sm mr-1">schedule</span>
-                  Próxima sessão: ${mentoria.nextSession}
-                </div>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                  <span class="material-symbols-outlined text-sm mr-1">star</span>
-                  ${mentoria.rating} • ${mentoria.sessionsCompleted}/${mentoria.totalSessions} sessões
-                </div>
-              </div>
-              <span class="text-lg font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">${mentoria.progress}%</span>
-            </div>
-            <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-3">
-              <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: ${mentoria.progress}%"></div>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="window.location.href='../mentoria/${mentoria.id}/'" class="flex-1 bg-primary text-white py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors">
-                Ver Detalhes
-              </button>
-              <button onclick="window.location.href='../sessao/agendar/?mentoria=${mentoria.id}'" class="flex-1 border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                Agendar
-              </button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      updateUpcomingSessions() {
-        const container = document.getElementById('upcoming-sessions');
-        const sessions = this.mentoriasData.upcomingSessions;
-
-        if (!sessions.length) {
-          container.innerHTML = `
-            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
-              <span class="material-symbols-outlined text-4xl mb-2">event</span>
-              <p>Nenhuma sessão agendada</p>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = sessions.map(session => `
-          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <h3 class="font-bold text-text-main dark:text-white mb-1">${session.topic}</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">${session.mentor}</p>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-1">
-                  <span class="material-symbols-outlined text-sm mr-1">calendar_today</span>
-                  ${session.date} às ${session.time} • ${session.duration}
-                </div>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                  <span class="material-symbols-outlined text-sm mr-1">${session.type === 'video' ? 'videocam' : 'location_on'}</span>
-                  ${session.type === 'video' ? 'Videochamada' : session.location}
-                </div>
-              </div>
-              <button onclick="window.location.href='${session.joinLink}'" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors whitespace-nowrap">
-                ${session.type === 'video' ? 'Entrar' : 'Ver Local'}
-              </button>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      updateCompletedMentorships() {
-        const container = document.getElementById('completed-mentorships');
-        const mentorias = this.mentoriasData.completedMentorships;
-
-        if (!mentorias.length) {
-          container.innerHTML = `
-            <div class="text-center py-8 text-slate-500 dark:text-slate-400">
-              <span class="material-symbols-outlined text-4xl mb-2">check_circle</span>
-              <p>Nenhuma mentoria concluída</p>
-            </div>
-          `;
-          return;
-        }
-
-        container.innerHTML = mentorias.map(mentoria => `
-          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <h3 class="font-bold text-text-main dark:text-white mb-1">${mentoria.topic}</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Com ${mentoria.mentor}</p>
-                <div class="flex items-center text-sm text-slate-500 dark:text-slate-400">
-                  <span class="material-symbols-outlined text-sm mr-1">check_circle</span>
-                  Concluída em ${mentoria.completedDate} • ${mentoria.sessionsCompleted} sessões
-                </div>
-              </div>
-              <div class="flex items-center bg-success/10 px-3 py-1 rounded-full">
-                <span class="material-symbols-outlined text-success text-sm mr-1">star</span>
-                <span class="font-bold text-success text-sm">${mentoria.rating}</span>
-              </div>
-            </div>
-          </div>
-        `).join('');
-      }
-
-      updateNextSession() {
-        const container = document.getElementById('next-session-card');
-        const nextSession = this.mentoriasData.stats.nextSession;
-
-        container.innerHTML = `
-          <div class="bg-white/20 rounded-lg p-4">
-            <h3 class="font-bold mb-1">${nextSession.topic}</h3>
-            <p class="text-white/90 text-sm mb-2">Com ${nextSession.mentor}</p>
-            <div class="flex items-center text-white/80 text-sm mb-3">
-              <span class="material-symbols-outlined text-sm mr-1">schedule</span>
-              ${nextSession.date} às ${nextSession.time}
-            </div>
-            <button onclick="window.location.href='../sessao/${nextSession.id}/'" class="w-full bg-white text-primary py-2 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
-              Preparar para Sessão
-            </button>
-          </div>
-        `;
-      }
-
-      setupEventListeners() {
-        document.getElementById('logout-btn').addEventListener('click', () => {
-          if (confirm('Tem certeza que deseja sair?')) {
-            this.authService.logout();
-          }
-        });
-
-        document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
-
-        // Filtros
-        document.getElementById('filter-all').addEventListener('click', () => this.setFilter('all'));
-        document.getElementById('filter-active').addEventListener('click', () => this.setFilter('active'));
-        document.getElementById('filter-completed').addEventListener('click', () => this.setFilter('completed'));
-      }
-
-      setFilter(filter) {
-        this.currentFilter = filter;
-
-        // Atualizar botões ativos
-        document.getElementById('filter-all').classList.toggle('bg-primary', filter === 'all');
-        document.getElementById('filter-all').classList.toggle('text-white', filter === 'all');
-        document.getElementById('filter-all').classList.toggle('border', filter !== 'all');
-
-        document.getElementById('filter-active').classList.toggle('bg-primary', filter === 'active');
-        document.getElementById('filter-active').classList.toggle('text-white', filter === 'active');
-        document.getElementById('filter-active').classList.toggle('border', filter !== 'active');
-
-        document.getElementById('filter-completed').classList.toggle('bg-primary', filter === 'completed');
-        document.getElementById('filter-completed').classList.toggle('text-white', filter === 'completed');
-        document.getElementById('filter-completed').classList.toggle('border', filter !== 'completed');
-
-        // Aqui você implementaria a lógica de filtragem real
-        console.log(`Filtro aplicado: ${filter}`);
-      }
-
-      showLoading(show) {
-        const loadingElement = document.getElementById('loading-state');
-        if (loadingElement) {
-          loadingElement.style.display = show ? 'flex' : 'none';
-        }
-      }
-
-      showContent(show) {
-        const contentElement = document.getElementById('mentorias-content');
-        if (contentElement) {
-          contentElement.style.display = show ? 'block' : 'none';
-        }
-      }
-
-      redirectToLogin() {
-        window.location.href = '../login/';
-      }
-
-      toggleTheme() {
-        const html = document.documentElement;
-        if (html.classList.contains('dark')) {
-          html.classList.remove('dark');
-          localStorage.setItem('theme', 'light');
-        } else {
-          html.classList.add('dark');
-          localStorage.setItem('theme', 'dark');
-        }
-      }
-
-      showError(message) {
-        console.error('💥 Erro:', message);
-        // Implementar exibição de erro
-      }
-    }
-
-    // Inicializar quando DOM estiver pronto
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('✅ DOM carregado, iniciando página de mentorias...');
-      new MentoriasPage();
-
-      testProfileAPI()
-    });
-
-    // Tema inicial
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-
-    // Debug helper
-    window.debugUser = () => {
-      console.log('🔍 DEBUG USER DATA:');
-      console.log('currentUser:', window.mentoriasPage?.currentUser);
-      console.log('localStorage fin_user:', localStorage.getItem('fin_user'));
-      console.log('localStorage fin_token:', localStorage.getItem('fin_token'));
-      console.log('localStorage user_avatar_base64:', localStorage.getItem('user_avatar_base64') ? 'EXISTS' : 'NOT EXISTS');
-    };
-  </script>
+  <script src="../js/mentorias.js"></script>
+ 
 </body>
 
 </html>

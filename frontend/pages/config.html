@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>FIN - Configurações</title>
+  <title>FIN - Perfil Configurações</title>
   <link rel="icon" href="../../src/public/finev.ico" type="image/x-icon">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -52,6 +52,24 @@
       border-color: #FF7A00;
       box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.1);
     }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .toast {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
   </style>
 </head>
 
@@ -63,7 +81,7 @@
     <div class="container mx-auto px-6 py-4">
       <div class="flex justify-between items-center">
         <div class="flex items-center">
-          <span class="text-2xl font-extrabold text-primary">FIN</span>
+          <span class="text-2xl font-extrabold text-primary">FINEV</span>
           <span class="ml-2 text-sm font-medium text-text-main dark:text-white">Configurações</span>
         </div>
         <nav class="hidden md:flex space-x-8">
@@ -76,9 +94,7 @@
           <a href="../pages/mentoria.html"
             class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Mentorias</a>
           <a href="../pages/perfil.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors">Perfil</a>
-          <a href="../pages/config.html"
-            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Configurações</a>
+            class="text-text-main dark:text-white font-medium hover:text-primary transition-colors border-b-2 border-primary">Perfil</a>
         </nav>
         <div class="flex items-center space-x-4">
           <button id="theme-toggle"
@@ -117,8 +133,8 @@
       <nav class="flex" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
           <li class="inline-flex items-center">
-            <a href="./dashboard.html" class="inline-flex items-center text-sm font-medium text-text-main dark:text-white hover:text-primary">
-              Dashboard
+            <a href="./perfil.html" class="inline-flex items-center text-sm font-medium text-text-main dark:text-white hover:text-primary">
+              Perfil
             </a>
           </li>
           <li aria-current="page">
@@ -161,6 +177,11 @@
                 Preferências
               </button>
             </li>
+            <li>
+              <button id="tab-avatar" class="tab-button w-full text-left px-4 py-2 rounded-lg text-text-main dark:text-white hover:bg-slate-100 dark:hover:bg-[#444444] font-medium transition-colors" data-tab="avatar">
+                Foto de Perfil
+              </button>
+            </li>
           </ul>
         </div>
       </div>
@@ -197,6 +218,13 @@
                 <input type="tel" id="phone" name="phone" 
                   class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
               </div>
+
+              <div>
+                <label for="bio" class="block text-sm font-medium text-text-main dark:text-white mb-2">Bio</label>
+                <textarea id="bio" name="bio" rows="4" 
+                  class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+                  placeholder="Conte um pouco sobre você..."></textarea>
+              </div>
               
               <div class="flex justify-end">
                 <button type="submit" class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
@@ -230,6 +258,16 @@
                   <input type="password" id="confirmPassword" name="confirmPassword" 
                     class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
                 </div>
+              </div>
+
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h4 class="font-medium text-blue-800 dark:text-blue-300 mb-2">Requisitos da Senha</h4>
+                <ul class="text-sm text-blue-700 dark:text-blue-400 space-y-1">
+                  <li>• Mínimo 8 caracteres</li>
+                  <li>• Pelo menos 1 letra maiúscula</li>
+                  <li>• Pelo menos 1 número</li>
+                  <li>• Pelo menos 1 caractere especial</li>
+                </ul>
               </div>
               
               <div class="flex justify-end">
@@ -280,6 +318,17 @@
                     <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
                   </label>
                 </div>
+
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="font-medium text-text-main dark:text-white">Notificações Push</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">Receba notificações no navegador</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="pushNotifications" name="pushNotifications" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-primary"></div>
+                  </label>
+                </div>
               </div>
               
               <div class="flex justify-end">
@@ -298,51 +347,34 @@
             
             <form id="preferences-form" class="space-y-6">
               <div>
-                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Mentores Favoritos</label>
-                <div class="space-y-3">
-                  <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
-                    <span class="text-text-main dark:text-white">João Silva - Desenvolvimento Front-end</span>
-                    <button type="button" class="text-red-500 hover:text-red-700">
-                      <span class="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
-                  <div class="flex items-center justify-between p-3 border border-slate-200 dark:border-slate-600 rounded-lg">
-                    <span class="text-text-main dark:text-white">Maria Santos - UX/UI Design</span>
-                    <button type="button" class="text-red-500 hover:text-red-700">
-                      <span class="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
-                </div>
-                <button type="button" class="mt-3 text-primary hover:text-orange-600 font-medium">
-                  + Adicionar Mentor Favorito
-                </button>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Idioma</label>
+                <select id="language" name="language" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="pt">Português (Brasil)</option>
+                  <option value="en">English</option>
+                  <option value="es">Español</option>
+                </select>
               </div>
-              
+
               <div>
-                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Temas de Interesse</label>
-                <div class="flex flex-wrap gap-2">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    Front-end
-                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
-                      <span class="material-symbols-outlined text-sm">close</span>
-                    </button>
-                  </span>
-                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    UX Design
-                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
-                      <span class="material-symbols-outlined text-sm">close</span>
-                    </button>
-                  </span>
-                  <span class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    Carreira
-                    <button type="button" class="ml-2 text-primary hover:text-orange-600">
-                      <span class="material-symbols-outlined text-sm">close</span>
-                    </button>
-                  </span>
-                </div>
-                <button type="button" class="mt-3 text-primary hover:text-orange-600 font-medium">
-                  + Adicionar Tema de Interesse
-                </button>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Fuso Horário</label>
+                <select id="timezone" name="timezone" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="America/Sao_Paulo">Brasília (GMT-3)</option>
+                  <option value="America/New_York">New York (GMT-5)</option>
+                  <option value="Europe/London">London (GMT+0)</option>
+                  <option value="Europe/Paris">Paris (GMT+1)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-text-main dark:text-white mb-4">Tema de Interesse Principal</label>
+                <select id="mainInterest" name="mainInterest" class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg form-input bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                  <option value="fin">Finanças e Investimentos</option>
+                  <option value="tech">Tecnologia</option>
+                  <option value="biz">Negócios</option>
+                  <option value="agro">Agronegócio</option>
+                  <option value="life">Desenvolvimento Pessoal</option>
+                  <option value="health">Saúde</option>
+                </select>
               </div>
               
               <div class="flex justify-end">
@@ -353,6 +385,68 @@
             </form>
           </div>
         </div>
+
+        <!-- Foto de Perfil -->
+        <div id="avatar-tab" class="settings-section tab-content hidden">
+          <div class="bg-white dark:bg-[#333333] rounded-lg p-6 shadow-sm">
+            <h2 class="text-xl font-bold text-text-main dark:text-white mb-6">Foto de Perfil</h2>
+            
+            <div class="space-y-6">
+              <!-- Preview do Avatar -->
+              <div class="flex flex-col items-center space-y-4">
+                <div id="avatar-preview" class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                  <span id="avatar-preview-initials">U</span>
+                </div>
+                <p class="text-sm text-slate-600 dark:text-slate-300 text-center">
+                  Sua foto de perfil será exibida em toda a plataforma
+                </p>
+              </div>
+
+              <!-- Opções de Upload -->
+              <div class="space-y-4">
+                <button onclick="configPage.startAvatarUpload()" 
+                  class="w-full bg-primary text-white py-3 rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center">
+                  <span class="material-symbols-outlined mr-2">upload</span>
+                  Fazer Upload de Imagem
+                </button>
+                
+                <button onclick="configPage.useSampleAvatar()" 
+                  class="w-full border border-primary text-primary py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-colors flex items-center justify-center">
+                  <span class="material-symbols-outlined mr-2">photo_library</span>
+                  Usar Foto de Exemplo
+                </button>
+
+                <div class="relative">
+                  <input type="text" id="avatar-url-input" 
+                    placeholder="Ou cole a URL de uma imagem online"
+                    class="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-[#444444] text-text-main dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20">
+                </div>
+                
+                <button onclick="configPage.useUrlAvatar()" 
+                  class="w-full border border-slate-300 dark:border-slate-600 text-text-main dark:text-white py-2 rounded-lg font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                  Usar URL da Imagem
+                </button>
+              </div>
+
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-sm text-blue-600 dark:text-blue-400">
+                  💡 <strong>Dica:</strong> Use imagens quadradas para melhor qualidade. Tamanho máximo: 5MB.
+                </p>
+              </div>
+
+              <div class="flex justify-end">
+                <button onclick="configPage.removeAvatar()" 
+                  class="px-6 py-3 border border-red-500 text-red-500 font-medium rounded-lg hover:bg-red-500 hover:text-white transition-colors mr-3">
+                  Remover Foto
+                </button>
+                <button onclick="configPage.saveAvatar()" 
+                  class="px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-orange-600 transition-colors">
+                  Salvar Foto
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -361,9 +455,11 @@
   <script>
     class ConfigPage {
       constructor() {
-        this.authService = authService;
+        this.authService = new AuthService();
         this.currentUser = null;
         this.currentTab = 'personal';
+        this.currentAvatar = null;
+        this.API_BASE = 'http://localhost:5000/api';
         this.init();
       }
 
@@ -372,8 +468,9 @@
           console.log('🚀 Iniciando página de configurações...');
           this.showLoading(true);
 
-          // Verificar autenticação
+          // ✅ VERIFICAÇÃO DE AUTENTICAÇÃO
           const isAuthenticated = await this.checkAuth();
+          console.log('🔐 Resultado da autenticação:', isAuthenticated);
 
           if (!isAuthenticated) {
             console.log('❌ Não autenticado, redirecionando...');
@@ -381,7 +478,7 @@
             return;
           }
 
-          // Carregar dados do usuário
+          // ✅ CARREGAR DADOS DO USUÁRIO
           await this.loadUserData();
           this.setupTabNavigation();
           this.setupEventListeners();
@@ -411,7 +508,7 @@
           console.log('📊 Resposta do profile:', profile);
 
           if (profile.success) {
-            this.currentUser = profile.data.user;
+            this.currentUser = profile.data.user || profile.data;
             console.log('✅ Usuário autenticado:', this.currentUser.email);
             return true;
           } else {
@@ -426,21 +523,186 @@
 
       async loadUserData() {
         if (this.currentUser) {
-          // Preencher formulário de dados pessoais
-          document.getElementById('firstName').value = this.currentUser.firstName || '';
-          document.getElementById('lastName').value = this.currentUser.lastName || '';
-          document.getElementById('email').value = this.currentUser.email || '';
-          document.getElementById('phone').value = this.currentUser.phone || '';
+          // ✅ ATUALIZAR INFORMAÇÕES DO USUÁRIO
+          this.updateUserInfo();
 
-          // Atualizar UI
-          const userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
-          const userInitials = this.currentUser.firstName[0] + (this.currentUser.lastName?.[0] || '');
+          // ✅ PREENCHER FORMULÁRIOS
+          this.fillForms();
 
-          document.getElementById('user-name').textContent = userName;
-          document.getElementById('user-avatar').textContent = userInitials;
-
-          console.log('✅ Dados do usuário carregados:', userName);
+          console.log('✅ Dados do usuário carregados:', this.currentUser.firstName);
         }
+      }
+
+      // ✅ SISTEMA DE AVATAR COMPLETO
+      updateUserInfo() {
+        const user = this.currentUser;
+
+        if (!user) {
+          console.log('❌ Nenhum usuário para atualizar UI');
+          return;
+        }
+
+        console.log('👤 Atualizando informações do usuário:', user);
+
+        // Nome do usuário no header
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+          const firstName = user.firstName || user.name || 'Usuário';
+          const lastName = user.lastName || '';
+          const userName = `${firstName} ${lastName}`.trim();
+          userNameElement.textContent = userName;
+          console.log('✅ Nome no header:', userName);
+        }
+
+        // Avatar do usuário - SISTEMA ATUALIZADO
+        const userAvatarElement = document.getElementById('user-avatar');
+        if (userAvatarElement) {
+          this.updateAvatar(user.avatarUrl, user);
+          console.log('✅ Avatar atualizado');
+        }
+
+        // Preview do avatar
+        const avatarPreviewElement = document.getElementById('avatar-preview');
+        const avatarInitialsElement = document.getElementById('avatar-preview-initials');
+        if (avatarPreviewElement && avatarInitialsElement) {
+          const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+          avatarInitialsElement.textContent = userInitials;
+          
+          // Tentar carregar avatar existente no preview
+          this.updateAvatarPreview(user.avatarUrl, user);
+        }
+      }
+
+      // ✅ SISTEMA DE AVATAR NO HEADER
+      updateAvatar(avatarUrl, user) {
+        const avatarElement = document.getElementById('user-avatar');
+        if (!avatarElement) return;
+
+        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+
+        console.log('🖼️ Atualizando avatar nas configurações...');
+
+        // 🥇 PRIORIDADE 1: Base64 salvo localmente
+        const base64Avatar = localStorage.getItem('user_avatar_base64');
+        if (base64Avatar) {
+          console.log('🖼️ Usando avatar base64 local nas configurações');
+          avatarElement.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          return;
+        }
+
+        // 🥈 PRIORIDADE 2: URL do servidor
+        if (avatarUrl) {
+          console.log('🖼️ Tentando avatar do servidor nas configurações:', avatarUrl);
+
+          const testImage = new Image();
+          testImage.onload = () => {
+            console.log('✅ Imagem do servidor carregou com sucesso nas configurações');
+            avatarElement.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          };
+
+          testImage.onerror = () => {
+            console.log('❌ Imagem do servidor falhou nas configurações, usando iniciais');
+            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+          };
+
+          const fullAvatarUrl = avatarUrl.startsWith('http') ? avatarUrl : `${this.API_BASE}${avatarUrl}`;
+          testImage.src = `${fullAvatarUrl}?t=${Date.now()}`;
+
+          setTimeout(() => {
+            if (!testImage.complete) {
+              console.log('⏰ Timeout - imagem não carregou a tempo nas configurações');
+              avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+            }
+          }, 3000);
+          return;
+        }
+
+        // 🥉 PRIORIDADE 3: Avatar URL salvo localmente
+        const localAvatar = localStorage.getItem('user_avatar');
+        if (localAvatar) {
+          console.log('🖼️ Usando avatar URL local nas configurações:', localAvatar);
+
+          const testImage = new Image();
+          testImage.onload = () => {
+            avatarElement.innerHTML = `<img src="${localAvatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+          };
+          testImage.onerror = () => {
+            avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+          };
+          testImage.src = `${localAvatar}?t=${Date.now()}`;
+          return;
+        }
+
+        // 🛡️ FALLBACK FINAL: Iniciais
+        console.log('🖼️ Nenhum avatar disponível nas configurações, usando iniciais');
+        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
+      }
+
+      // ✅ ATUALIZAR PREVIEW DO AVATAR
+      updateAvatarPreview(avatarUrl, user) {
+        const avatarPreview = document.getElementById('avatar-preview');
+        if (!avatarPreview) return;
+
+        const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+
+        // Se já temos um avatar carregado, usar ele
+        if (this.currentAvatar) {
+          if (this.currentAvatar.startsWith('data:')) {
+            // É base64
+            avatarPreview.innerHTML = `<img src="${this.currentAvatar}" alt="Avatar" class="w-32 h-32 rounded-full object-cover shadow-lg">`;
+          } else {
+            // É URL
+            avatarPreview.innerHTML = `<img src="${this.currentAvatar}" alt="Avatar" class="w-32 h-32 rounded-full object-cover shadow-lg">`;
+          }
+          return;
+        }
+
+        // Tentar carregar avatar existente
+        const base64Avatar = localStorage.getItem('user_avatar_base64');
+        if (base64Avatar) {
+          avatarPreview.innerHTML = `<img src="${base64Avatar}" alt="Avatar" class="w-32 h-32 rounded-full object-cover shadow-lg">`;
+          return;
+        }
+
+        if (avatarUrl) {
+          const testImage = new Image();
+          testImage.onload = () => {
+            avatarPreview.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="w-32 h-32 rounded-full object-cover shadow-lg">`;
+          };
+          testImage.onerror = () => {
+            avatarPreview.innerHTML = `<div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-3xl font-bold shadow-lg">${userInitials}</div>`;
+          };
+          testImage.src = `${avatarUrl}?t=${Date.now()}`;
+          return;
+        }
+
+        // Fallback para iniciais
+        avatarPreview.innerHTML = `<div class="w-32 h-32 rounded-full bg-gradient-to-br from-primary to-orange-400 flex items-center justify-center text-white text-3xl font-bold shadow-lg">${userInitials}</div>`;
+      }
+
+      fillForms() {
+        const user = this.currentUser;
+        if (!user) return;
+
+        // Dados Pessoais
+        document.getElementById('firstName').value = user.firstName || '';
+        document.getElementById('lastName').value = user.lastName || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('bio').value = user.bio || '';
+
+        // Preferências (carregar do localStorage)
+        const preferences = JSON.parse(localStorage.getItem('user_preferences') || '{}');
+        document.getElementById('language').value = preferences.language || 'pt';
+        document.getElementById('timezone').value = preferences.timezone || 'America/Sao_Paulo';
+        document.getElementById('mainInterest').value = preferences.mainInterest || 'fin';
+
+        // Notificações (carregar do localStorage)
+        const notifications = JSON.parse(localStorage.getItem('user_notifications') || '{}');
+        document.getElementById('emailNotifications').checked = notifications.emailNotifications !== false;
+        document.getElementById('sessionReminders').checked = notifications.sessionReminders !== false;
+        document.getElementById('newMentors').checked = notifications.newMentors || false;
+        document.getElementById('pushNotifications').checked = notifications.pushNotifications || false;
       }
 
       setupTabNavigation() {
@@ -501,17 +763,41 @@
         });
       }
 
+      // ✅ FUNCIONALIDADES DE EDIÇÃO COMPLETAS
+
       async updatePersonalData() {
         const formData = {
-          firstName: document.getElementById('firstName').value,
-          lastName: document.getElementById('lastName').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          bio: document.getElementById('bio').value.trim()
         };
 
+        // Validações
+        if (!formData.firstName) {
+          this.showToast('Nome é obrigatório', 'error');
+          return;
+        }
+
+        if (!formData.email) {
+          this.showToast('E-mail é obrigatório', 'error');
+          return;
+        }
+
         try {
-          // Simular atualização
           console.log('📝 Atualizando dados pessoais:', formData);
+          
+          // Simular chamada à API
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Atualizar dados locais
+          this.currentUser = { ...this.currentUser, ...formData };
+          localStorage.setItem('fin_user', JSON.stringify(this.currentUser));
+          
+          // Atualizar UI
+          this.updateUserInfo();
+          
           this.showToast('Dados pessoais atualizados com sucesso!', 'success');
         } catch (error) {
           console.error('Erro ao atualizar dados:', error);
@@ -524,14 +810,28 @@
         const newPassword = document.getElementById('newPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
 
+        // Validações
+        if (!currentPassword) {
+          this.showToast('Senha atual é obrigatória', 'error');
+          return;
+        }
+
         if (newPassword !== confirmPassword) {
           this.showToast('As senhas não coincidem', 'error');
           return;
         }
 
+        if (newPassword.length < 8) {
+          this.showToast('A senha deve ter pelo menos 8 caracteres', 'error');
+          return;
+        }
+
         try {
-          // Simular atualização de senha
           console.log('🔐 Atualizando senha...');
+          
+          // Simular chamada à API
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           this.showToast('Senha alterada com sucesso!', 'success');
           
           // Limpar formulário
@@ -546,11 +846,16 @@
         const formData = {
           emailNotifications: document.getElementById('emailNotifications').checked,
           sessionReminders: document.getElementById('sessionReminders').checked,
-          newMentors: document.getElementById('newMentors').checked
+          newMentors: document.getElementById('newMentors').checked,
+          pushNotifications: document.getElementById('pushNotifications').checked
         };
 
         try {
           console.log('🔔 Atualizando preferências de notificação:', formData);
+          
+          // Salvar no localStorage
+          localStorage.setItem('user_notifications', JSON.stringify(formData));
+          
           this.showToast('Preferências de notificação atualizadas!', 'success');
         } catch (error) {
           console.error('Erro ao atualizar notificações:', error);
@@ -559,15 +864,154 @@
       }
 
       async updatePreferences() {
-        // Simular atualização de preferências
-        console.log('⭐ Atualizando preferências...');
-        this.showToast('Preferências atualizadas com sucesso!', 'success');
+        const formData = {
+          language: document.getElementById('language').value,
+          timezone: document.getElementById('timezone').value,
+          mainInterest: document.getElementById('mainInterest').value
+        };
+
+        try {
+          console.log('⭐ Atualizando preferências:', formData);
+          
+          // Salvar no localStorage
+          localStorage.setItem('user_preferences', JSON.stringify(formData));
+          
+          this.showToast('Preferências atualizadas com sucesso!', 'success');
+        } catch (error) {
+          console.error('Erro ao atualizar preferências:', error);
+          this.showToast('Erro ao atualizar preferências', 'error');
+        }
+      }
+
+      // ✅ SISTEMA DE AVATAR - FUNCIONALIDADES COMPLETAS
+
+      startAvatarUpload() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        
+        fileInput.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            // Validar tamanho do arquivo
+            if (file.size > 5 * 1024 * 1024) {
+              this.showToast('A imagem deve ter menos de 5MB', 'error');
+              return;
+            }
+
+            // Validar tipo do arquivo
+            if (!file.type.startsWith('image/')) {
+              this.showToast('Por favor, selecione apenas arquivos de imagem', 'error');
+              return;
+            }
+
+            try {
+              const base64Image = await this.fileToBase64(file);
+              this.currentAvatar = base64Image;
+              this.updateAvatarPreview(base64Image, this.currentUser);
+              this.showToast('Imagem carregada com sucesso!', 'success');
+            } catch (error) {
+              this.showToast('Erro ao processar a imagem', 'error');
+            }
+          }
+        };
+        
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        document.body.removeChild(fileInput);
+      }
+
+      async useSampleAvatar() {
+        const sampleAvatars = [
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face'
+        ];
+        
+        const randomAvatar = sampleAvatars[Math.floor(Math.random() * sampleAvatars.length)];
+        this.currentAvatar = randomAvatar;
+        this.updateAvatarPreview(randomAvatar, this.currentUser);
+        this.showToast('Foto de exemplo carregada!', 'success');
+      }
+
+      async useUrlAvatar() {
+        const urlInput = document.getElementById('avatar-url-input');
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+          this.showToast('Por favor, insira uma URL válida', 'error');
+          return;
+        }
+        
+        try {
+          new URL(url);
+          this.currentAvatar = url;
+          this.updateAvatarPreview(url, this.currentUser);
+          this.showToast('URL carregada com sucesso!', 'success');
+          urlInput.value = '';
+        } catch (e) {
+          this.showToast('URL inválida. Use um formato como: https://exemplo.com/imagem.jpg', 'error');
+        }
+      }
+
+      async saveAvatar() {
+        if (!this.currentAvatar) {
+          this.showToast('Nenhuma imagem selecionada', 'error');
+          return;
+        }
+
+        try {
+          // Se for base64, salvar localmente
+          if (this.currentAvatar.startsWith('data:')) {
+            localStorage.setItem('user_avatar_base64', this.currentAvatar);
+            localStorage.removeItem('user_avatar'); // Limpar URL antiga
+          } else {
+            // Se for URL, salvar como URL
+            localStorage.setItem('user_avatar', this.currentAvatar);
+            localStorage.removeItem('user_avatar_base64'); // Limpar base64 antigo
+          }
+
+          // Atualizar avatar em todas as páginas
+          this.updateAvatar(this.currentAvatar, this.currentUser);
+          
+          this.showToast('Foto de perfil salva com sucesso!', 'success');
+          
+          // Limpar avatar temporário
+          this.currentAvatar = null;
+        } catch (error) {
+          console.error('Erro ao salvar avatar:', error);
+          this.showToast('Erro ao salvar foto de perfil', 'error');
+        }
+      }
+
+      removeAvatar() {
+        // Remover avatares salvos
+        localStorage.removeItem('user_avatar_base64');
+        localStorage.removeItem('user_avatar');
+        
+        // Limpar avatar temporário
+        this.currentAvatar = null;
+        
+        // Atualizar preview e header
+        this.updateAvatarPreview(null, this.currentUser);
+        this.updateAvatar(null, this.currentUser);
+        
+        this.showToast('Foto de perfil removida', 'success');
+      }
+
+      fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(new Error('Erro ao ler arquivo'));
+          reader.readAsDataURL(file);
+        });
       }
 
       showToast(message, type = 'info') {
-        // Implementação simples de toast notification
         const toast = document.createElement('div');
-        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 toast ${
           type === 'success' ? 'bg-success text-white' : 
           type === 'error' ? 'bg-red-500 text-white' : 
           'bg-primary text-white'
@@ -577,13 +1021,19 @@
         document.body.appendChild(toast);
         
         setTimeout(() => {
-          document.body.removeChild(toast);
-        }, 3000);
+          if (toast.parentNode) {
+            document.body.removeChild(toast);
+          }
+        }, 4000);
       }
 
       setupEventListeners() {
         document.getElementById('theme-toggle').addEventListener('click', this.toggleTheme);
-        document.getElementById('logout-btn').addEventListener('click', () => this.authService.logout());
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          if (confirm('Tem certeza que deseja sair?')) {
+            this.authService.logout();
+          }
+        });
       }
 
       showLoading(show) {
@@ -602,7 +1052,7 @@
       redirectToLogin() {
         console.log('🔄 Redirecionando para login...');
         setTimeout(() => {
-          window.location.href = '../pages/login';
+          window.location.href = '../pages/login.html';
         }, 1000);
       }
 
@@ -618,12 +1068,12 @@
       }
     }
 
-    // Inicialização quando DOM estiver pronto
+    // ✅ INICIALIZAÇÃO
     document.addEventListener('DOMContentLoaded', () => {
-      new ConfigPage();
+      window.configPage = new ConfigPage();
     });
 
-    // Tema inicial
+    // ✅ TEMA INICIAL
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -632,5 +1082,4 @@
     }
   </script>
 </body>
-
 </html>

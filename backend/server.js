@@ -191,13 +191,22 @@ try {
   console.error('❌ ERRO CRÍTICO: Falha ao carregar rotas de upload:', error.message);
 }
 
-// Adicionar também após as outras rotas de mentor
+// Adicionar as outras rotas de mentor
 try {
   const mentorProfileRoutes = require('./routes/mentorProfile');
   app.use('/api/mentor-profile', mentorProfileRoutes);
   console.log('✅ Rotas de mentor-profile carregadas');
 } catch (error) {
   console.log('⚠️  Rotas de mentor-profile não disponíveis:', error.message);
+}
+
+// Adicionar rotas de mentorias - CORRIGIDO
+try {
+  const mentoriasRoutes = require('./routes/mentorias');
+  app.use('/api/mentorias', mentoriasRoutes); // Corrigido: mentoriasRoutes em vez de mentorProfileRoutes
+  console.log('✅ Rotas de mentorias carregadas');
+} catch (error) {
+  console.log('⚠️  Rotas de mentoria não disponíveis:', error.message);
 }
 
 // 🔥 ROTA DE HEALTH CHECK PARA TESTE

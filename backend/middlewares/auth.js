@@ -1,7 +1,8 @@
 // backend/middlewares/auth.js
 const jwt = require('jsonwebtoken');
+const db = require('../config/database'); // Adicione esta linha
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => { // Mude para async
   try {
     console.log('🔐 Iniciando autenticação...');
     
@@ -40,17 +41,37 @@ const authenticate = (req, res, next) => {
     console.log('✅ Token válido para usuário:', decoded.userId);
     console.log('🔍 Token decodificado completo:', decoded);
     
-    // 🔥 CORREÇÃO: Definir AMBOS req.user E req.userId para compatibilidade
+    // 🔥 CORREÇÃO CRÍTICA: Buscar dados atualizados do banco
+    console.log('🗃️  Buscando dados atualizados do usuário no banco...');
+    const userQuery = 'SELECT id, email, first_name, last_name, role FROM users WHERE id = $1';
+    const userResult = await db.query(userQuery, [decoded.userId]);
+    
+    if (userResult.rows.length === 0) {
+      console.log('❌ Usuário não encontrado no banco');
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário não encontrado'
+      });
+    }
+    
+    const userFromDB = userResult.rows[0];
+    console.log('📊 Dados do banco:', userFromDB);
+    
+    // 🔥 CORREÇÃO: Usar dados ATUALIZADOS do banco, não do token
     req.user = {
-      id: decoded.userId,
-      role: decoded.role || 'user'
+      id: userFromDB.id,
+      email: userFromDB.email,
+      firstName: userFromDB.first_name,
+      lastName: userFromDB.last_name,
+      role: userFromDB.role // ⚠️ IMPORTANTE: Role do banco, não do token
     };
     
-    // 🔥 CORREÇÃO CRÍTICA: Definir req.userId também
-    req.userId = decoded.userId;
+    // Manter compatibilidade
+    req.userId = userFromDB.id;
     
-    console.log('🔍 DEBUG - req.user:', req.user);
+    console.log('🔍 DEBUG - req.user (ATUALIZADO):', req.user);
     console.log('🔍 DEBUG - req.userId:', req.userId);
+    console.log('🎯 Role final do usuário:', req.user.role);
     
     next();
 
@@ -73,7 +94,7 @@ const authenticate = (req, res, next) => {
 
     return res.status(500).json({
       success: false,
-      message: 'Erro na autenticação'
+      message: 'Erro na autenticação: ' + error.message
     });
   }
 };

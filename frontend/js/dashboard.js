@@ -1,4 +1,3 @@
-
 // 🔥 SISTEMA DE AUTENTICAÇÃO
 class AuthService {
     constructor() {
@@ -42,6 +41,8 @@ class AuthService {
     logout() {
         localStorage.removeItem('fin_token');
         localStorage.removeItem('fin_user');
+        localStorage.removeItem('user_avatar_base64'); // Limpar avatar também
+        localStorage.removeItem('user_avatar');
         window.location.href = '../pages/login.html';
     }
 
@@ -165,6 +166,8 @@ class Dashboard {
     logout() {
         localStorage.removeItem('fin_token');
         localStorage.removeItem('fin_user');
+        localStorage.removeItem('user_avatar_base64');
+        localStorage.removeItem('user_avatar');
         window.location.href = '../pages/login.html';
     }
 
@@ -290,7 +293,7 @@ class Dashboard {
         this.updateRecentProgress();
     }
 
-    // ✅ ATUALIZAR INFORMAÇÕES DO USUÁRIO
+    // ✅ ATUALIZAR INFORMAÇÕES DO USUÁRIO (SISTEMA ATUALIZADO)
     updateUserInfo() {
         const user = this.currentUser;
 
@@ -327,7 +330,7 @@ class Dashboard {
         }
     }
 
-    // ✅ SISTEMA DE AVATAR ATUALIZADO
+    // ✅ SISTEMA DE AVATAR COMPLETO (MESMO PADRÃO DAS OUTRAS PÁGINAS)
     updateAvatar(avatarUrl, user) {
         const avatarElement = document.getElementById('user-avatar');
         if (!avatarElement) return;
@@ -335,8 +338,9 @@ class Dashboard {
         const userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
 
         console.log('🖼️ Atualizando avatar no dashboard...');
+        console.log('📁 Avatar URL recebida:', avatarUrl);
 
-        // PRIORIDADE 1: Base64 salvo localmente
+        // 🥇 PRIORIDADE 1: Base64 salvo localmente
         const base64Avatar = localStorage.getItem('user_avatar_base64');
         if (base64Avatar) {
             console.log('🖼️ Usando avatar base64 local no dashboard');
@@ -344,40 +348,55 @@ class Dashboard {
             return;
         }
 
-        // PRIORIDADE 2: URL do servidor (com fallback robusto)
+        // 🥈 PRIORIDADE 2: URL do servidor (COM CORREÇÃO DA URL)
         if (avatarUrl) {
             console.log('🖼️ Tentando avatar do servidor no dashboard:', avatarUrl);
 
-            // Criar uma imagem de teste para verificar se carrega
+            // CORREÇÃO: Verificar se é uma URL completa ou relativa
+            let fullAvatarUrl;
+
+            if (avatarUrl.startsWith('http')) {
+                // Já é uma URL completa
+                fullAvatarUrl = avatarUrl;
+            } else if (avatarUrl.startsWith('/uploads/')) {
+                // URL relativa do servidor - ajustar para o backend
+                fullAvatarUrl = `http://localhost:5000${avatarUrl}`;
+            } else if (avatarUrl.startsWith('uploads/')) {
+                // URL relativa sem a barra
+                fullAvatarUrl = `http://localhost:5000/${avatarUrl}`;
+            } else {
+                // Outro formato - tentar como está
+                fullAvatarUrl = `http://localhost:5000/uploads/avatars/${avatarUrl}`;
+            }
+
+            console.log('🔗 URL final do avatar:', fullAvatarUrl);
+
             const testImage = new Image();
             testImage.onload = () => {
                 console.log('✅ Imagem do servidor carregou com sucesso no dashboard');
-                avatarElement.innerHTML = `<img src="${avatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
+                avatarElement.innerHTML = `<img src="${fullAvatarUrl}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
             };
 
             testImage.onerror = () => {
                 console.log('❌ Imagem do servidor falhou no dashboard, usando iniciais');
-                avatarElement.innerHTML = `<span>${userInitials}</span>`;
+                avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
             };
 
-            // Corrigir URL se necessário
-            const fullAvatarUrl = avatarUrl.startsWith('http') ? avatarUrl : `http://localhost:5000/api${avatarUrl}`;
-            testImage.src = `${fullAvatarUrl}?t=${Date.now()}`; // Adicionar timestamp para evitar cache
+            testImage.src = `${fullAvatarUrl}?t=${Date.now()}`;
 
-            // Timeout para fallback
+            // ⏰ TIMEOUT DE SEGURANÇA
             setTimeout(() => {
                 if (!testImage.complete) {
                     console.log('⏰ Timeout - imagem não carregou a tempo no dashboard');
-                    avatarElement.innerHTML = `<span>${userInitials}</span>`;
+                    avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
                 }
             }, 3000);
-
             return;
         }
 
-        // PRIORIDADE 3: Avatar URL salvo localmente (fallback antigo)
+        // 🥉 PRIORIDADE 3: Avatar URL salvo localmente
         const localAvatar = localStorage.getItem('user_avatar');
-        if (localAvatar && localAvatar.startsWith('http')) {
+        if (localAvatar) {
             console.log('🖼️ Usando avatar URL local no dashboard:', localAvatar);
 
             const testImage = new Image();
@@ -385,16 +404,15 @@ class Dashboard {
                 avatarElement.innerHTML = `<img src="${localAvatar}" alt="Avatar" class="w-8 h-8 rounded-full object-cover">`;
             };
             testImage.onerror = () => {
-                avatarElement.innerHTML = `<span>${userInitials}</span>`;
+                avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
             };
             testImage.src = `${localAvatar}?t=${Date.now()}`;
-
             return;
         }
 
-        // FALLBACK FINAL: Iniciais
+        // 🛡️ FALLBACK FINAL: Iniciais
         console.log('🖼️ Nenhum avatar disponível no dashboard, usando iniciais');
-        avatarElement.innerHTML = `<span>${userInitials}</span>`;
+        avatarElement.innerHTML = `<span class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm">${userInitials}</span>`;
     }
 
     // ✅ ATUALIZAR ESTATÍSTICAS
@@ -722,7 +740,6 @@ class Dashboard {
         }
     }
 
-
     // ✅ ESCAPAR HTML PARA SEGURANÇA
     escapeHtml(text) {
         const div = document.createElement('div');
@@ -730,7 +747,7 @@ class Dashboard {
         return div.innerHTML;
     }
 
-    // ✅ OBTER INICIAIS DO USUÁRIO
+    // ✅ OBTER INICIAIS DO USUÁRIO (USANDO SISTEMA DE AVATAR)
     getUserInitials() {
         if (!this.currentUser) return 'U';
         const first = this.currentUser.firstName ? this.currentUser.firstName[0] : 'U';
@@ -799,56 +816,6 @@ class Dashboard {
             }
         }, typingSpeed);
     }
-
-
-
-    /*
-        // ✅ GERAR RESPOSTA DO BOT
-        generateBotResponse(userMessage) {
-            const lowerMessage = userMessage.toLowerCase();
-    
-            if (lowerMessage.includes('oi') || lowerMessage.includes('olá') || lowerMessage.includes('ola')) {
-                return `
-                    <p class="chat-message">Olá! Que bom te ver por aqui! 😊</p>
-                    <p class="chat-message mt-2">Como posso te ajudar hoje em sua jornada financeira?</p>
-                  `;
-            } else if (lowerMessage.includes('meta') || lowerMessage.includes('objetivo')) {
-                return `
-                    <p class="chat-message">Excelente! Definir metas é o primeiro passo para o sucesso financeiro! 🎯</p>
-                    <p class="chat-message mt-2">Vamos trabalhar juntos para estabelecer metas claras e alcançáveis. Você pode:</p>
-                    <ul class="chat-list">
-                      <li>📝 <strong>Definir</strong> metas de curto, médio e longo prazo</li>
-                      <li>💰 <strong>Estabelecer</strong> prazos realistas</li>
-                      <li>📊 <strong>Acompanhar</strong> seu progresso regularmente</li>
-                    </ul>
-                    <p class="chat-message mt-2">Qual área você gostaria de focar primeiro?</p>
-                  `;
-            } else if (lowerMessage.includes('mentor') || lowerMessage.includes('especialista')) {
-                return `
-                    <p class="chat-message">Temos mentores incríveis para te ajudar! 👥</p>
-                    <p class="chat-message mt-2">Nossa rede inclui especialistas em:</p>
-                    <ul class="chat-list">
-                      <li>💼 <strong>Investimentos</strong> e mercado financeiro</li>
-                      <li>🏠 <strong>Planejamento</strong> patrimonial</li>
-                      <li>📈 <strong>Educação</strong> financeira</li>
-                      <li>🛡️ <strong>Previdência</strong> privada</li>
-                    </ul>
-                    <p class="chat-message mt-2">Gostaria que eu recomende algum mentor específico?</p>
-                  `;
-            } else {
-                return `
-                    <p class="chat-message">Obrigado pela sua mensagem! 🤔</p>
-                    <p class="chat-message mt-2">Posso te ajudar com:</p>
-                    <ul class="chat-list">
-                      <li>🎯 <strong>Definição</strong> de metas financeiras</li>
-                      <li>📚 <strong>Recomendações</strong> de conteúdo personalizado</li>
-                      <li>👥 <strong>Conexão</strong> com mentores especializados</li>
-                      <li>📊 <strong>Acompanhamento</strong> do seu progresso</li>
-                    </ul>
-                    <p class="chat-message mt-2">Por qual desses você tem interesse?</p>
-                  `;
-            }
-        }*/
 
     // ✅ PROMPT PARA NOVO USUÁRIO
     showNewUserPrompt() {
